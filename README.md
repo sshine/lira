@@ -82,7 +82,7 @@ time unit:
 u ::= seconds | minutes | hours | days | weeks
 
 operators:
-op ::= + | - | x | / | = | if | or | and
+op ::= + | - | x | / | = | if | or | and | min | max
 uop ::=  not
 
 operator types:
@@ -203,11 +203,18 @@ methods: `activate()` and `execute()`.
 
  `activate()` and `execute()` may change state.
 
-## Online DEMO
-A working demo can be found at
-[https://sandbox.firmo.network/](https://sandbox.firmo.network/). Below is a
-screenshot of the frontend<br> ![Frontend
-screenshot](https://raw.githubusercontent.com/Firmo-Network/etlc/master/docs/frontend.png?token=AABFWOQJMDDFRAKTDADEXHC432VAC)
+# Installation
+At the moment the only way to compile Lira contracts is to build the compiler manually.
+1. Build the compiler by running
+```
+$ stack install
+```
+2. You can now compile one of the examples by executing the following
+```
+$ mkdir build
+$ lira -o build examples/BettingExample0.lir
+```
+Remember to change the placement addresses in the examples with real ones.
 
 ### Example 1: Future
 
