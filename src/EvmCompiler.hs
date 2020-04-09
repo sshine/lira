@@ -23,8 +23,8 @@
 module EvmCompiler where
 
 import EvmLanguageDefinition
-import IntermediateLanguageDefinition
 import Lira.Contract hiding (Transfer)
+import Lira.Contract.Intermediate
 import IntermediateCompiler (emptyContract)
 
 import Control.Monad.State

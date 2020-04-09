@@ -22,8 +22,8 @@
 
 module IntermediateCompiler where
 
-import IntermediateLanguageDefinition
 import Lira.Contract
+import Lira.Contract.Intermediate
 
 import Control.Monad.Reader
 import Control.Monad.State
