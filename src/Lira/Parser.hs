@@ -22,7 +22,7 @@
 
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# LANGUAGE OverloadedStrings #-}
-module EtlParser where
+module Lira.Parser where
 
 -- file: Parser.hs
 import Lira.Contract
