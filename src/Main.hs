@@ -26,7 +26,7 @@ module Main where
 import EvmCompiler as EVMC
 import IntermediateCompiler as IMC
 import Lira.Parser as BP
-import TypeChecker as TC
+import Lira.TypeChecker as TC
 
 import Data.Aeson
 --import qualified Data.Text.Lazy.IO as I (writeFile)

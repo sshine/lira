@@ -20,7 +20,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module TypeChecker where
+module Lira.TypeChecker where
 
 import Lira.Contract
 
