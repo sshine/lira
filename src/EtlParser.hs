@@ -25,7 +25,7 @@
 module EtlParser where
 
 -- file: Parser.hs
-import EtlLanguageDefinition
+import Lira.Contract
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Combinator as ParSecCom
 

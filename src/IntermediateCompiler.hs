@@ -23,7 +23,7 @@
 module IntermediateCompiler where
 
 import IntermediateLanguageDefinition
-import EtlLanguageDefinition
+import Lira.Contract
 
 import Control.Monad.Reader
 import Control.Monad.State

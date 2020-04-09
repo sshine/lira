@@ -22,7 +22,7 @@
 
 module EtlPP where
 
-import EtlLanguageDefinition
+import Lira.Contract
 
 etlPP :: Contract -> String
 etlPP c = etlPPH c 1

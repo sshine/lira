@@ -22,7 +22,7 @@
 
 module EvmCompilerHelper where
 
-import EtlLanguageDefinition
+import Lira.Contract
 import EvmLanguageDefinition
 
 import Crypto.Hash

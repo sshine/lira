@@ -22,7 +22,7 @@
 
 module IntermediateLanguageDefinition where
 
-import EtlLanguageDefinition
+import Lira.Contract
 
 import qualified Data.Map.Strict as Map
 
