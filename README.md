@@ -1,68 +1,88 @@
-# The Firmo protocol system
+<p align="center"><img width=30% src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-image.svg"></p>
+<p align="center"><img width=40% src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-text.svg"></p>
+<br/>
+<br/>
 
-This document describes the Firmo protocol and its implementation. The use of
-the protocol illustrated through examples of how derivative contracts can be
-created.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+![Haskell](https://img.shields.io/badge/haskell-lts--13.20-blue)
+[![Build Status](https://img.shields.io/circleci/build/github/etoroxlabs/lira)](https://circleci.com/gh/etoroxlabs/lira)
+![Dependencies](https://img.shields.io/discourse/https/community.lira.org/likes)
+[![GitHub Issues](https://img.shields.io/github/issues/etoroxlabs/lira.svg)](https://github.com/etoroxlabs/lira/issues)
+![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-The Firmo protocol centers around a Domain Specific Language (DSL) called
-eToroLang which is used to specify the derivative contracts and has been adapted
-from the contract language of [Bahr et all
-(2015)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.720.1324&rep=rep1&type=pdf)
-and [Egelund-Müller et all
-(2017)](https://www.researchgate.net/publication/321327355_Automated_Execution_of_Financial_Contracts_on_Blockchains).
+Lira is a declarative domain-specific language designed to be the backbone of
+financial contracts that can be executed on the blockchain.
 
-Using a non-Turing complete DSL for this purpose has several advantages. In
-particular, the language is restricted such that using it to specify unintended
-behavior is impossible. Further, as the semantics of the language are formally
-verified, contracts specified in the language is guaranteed to behave as
-intended and to only have a single interpretation.
+Lira aims at being simple and easy-to-follow allowing users
+to define simple yet highly complex financial contracts.
+Lira is formally verified and based on internationally
+recognized academic research
+([Egelund-Müller B, Elsman M, Henglein F, Ross O (2017)](https://github.com/etoroxlabs/lira/blob/master/docs/ross.pdf)).
 
-To show a possible integration of the language, we provide a graphical frontend
-for creating, deploying and monitoring future contracts. Behind the scenes, the
-frontend will generate corresponding eToroLang code which is subsequently
-compiled to EVM and deployed to a local Ethereum testnet. By generating
-eToroLang, we ensure that the static guarantees of the language applies
-regardless of frontend functionality. Additionally, the frontend makes it
-possible to view both the generated eToroLang code and the compiled EVM code.
+This repository provides a Lira compiler that you can start using today.
+Currently, it only compiles to EVM but it can be extended
+with other backends as well.
 
-The frontend is for demonstration purposes only and relies on being able to act
-as a signatory on behalf of the accounts representing both parties agreeing to
-the contract. In an actual deployment of the system, a separate signing step by
-each individual signatory is required before they can enter into agreement.
-Further, the demonstration frontend will always create a contractual agreement
-between two predefined parties. Finally, the demostration implementation of the
-on-chain contracts will take the amount of tokens held by the contract into
-escrow. In an actual implementation of the system, an alternative method would
-be used which avoids large amounts of tokens in this manner.
+# Table of Contents
+<!--ts-->
+  * [Try the Lira demo](#try-the-lira-demo---demoliraorg)
+  * [The Lira Language](#the-lira-language)
+    * [Definition](#definition)
+    * [Examples](#examples)
+      * [Example 1: Future](#example-1-future)
+      * [Example 2: European put option, an Insurance Against a Drop in the ETH price](#example-2-european-put-option-an-insurance-against-a-drop-in-the-eth-price)
+    * [Application Binary Interface (ABI) of the produced contracts](#application-binary-interface-abi-of-the-produced-contracts)
+  * [Installation](#installation)
+    * [Prerequisites](#prerequisites)
+  * [Future developments](#future-developments)
+<!--te-->
 
-## The eToroLang (etl)
+# Try the Lira demo - [demo.lira.org](https://demo.lira.org)
 
-### Overview
-Before we give the full definition of the langauge, let's go through a few of
-the functions. 
+To show a possible integration of the language, we provide a graphical
+frontend use-case for creating, deploying and monitoring future
+contracts. Behind the scenes, this frontend will generate
+corresponding Lira code which is subsequently compiled to EVM and
+deployed to Ethereum. By generating Lira code, we
+ensure that the static guarantees of the language apply regardless
+of frontend functionality. Additionally, the frontend makes it
+possible to view both the generated Lira code and the compiled EVM
+bytecode.
+
+Using a non-Turing complete DSL for this purpose has several
+advantages. In particular, the language is restricted such that using
+it to specify unintended behavior is impossible. Further, as the
+semantics of the language are formally verified, contracts specified
+in the language is guaranteed to behave as intended and to only have a
+single interpretation.
+
+# The Lira Language
+Before we give the full definition of the language, let's go through a few of
+the functions.
 
 To transfer a unit token from address `p1` to address `p2`, the `transfer(a, p1,
 p2)` function is used, where `a` is the token constract address (e.g. eToroUSD).
 
-Transfering an arbitry token amount can be done by using `scale(n, e, c)`, where
+Transferring an arbitrary token amount can be done by using `scale(n, e, c)`, where
 `n` is the maximum amount of tokens the contract will lock in escrow, `e` is an
 expression resolving in the actual amount of tokens to transfer and `c` is the
-ERC-20 token contract. We need to lock tokens in escrow, since the actual token
-amount might be evaluated at runtime. The amount of tokens to transfer can never
+ERC-20 token contract. We need to lock tokens in escrow since the actual token
+amount might be evaluated at runtime. The number of tokens to transfer can never
 exceed the maximum amount.
 
 By combining the transfer function
 and the scale function above, we can transfer an arbitrary amount of tokens
 using `scale(a, e, transfer(a, p1, p2))`.
 
-If a contract should be excecuted at a specific time in the future,
+If a contract should be executed at a specific time in the future,
 `translate(t,c1)` can be used, where `t` is the time offset.
 
 Notice how the contracts can be composed of simpler contracts by the
 constructors `transfer`, `scale` and `translate` (and a few more defined below).
 
-### Definition
-Below is the full definition of the language written as a context free grammar
+## Definition
+Below is the full definition of the language written as a context-free grammar
 definition of the language in which the derivative contracts are written:
 
 ```
@@ -72,7 +92,7 @@ c ::= scale(n,e,c1) | zero | both(c1,c2) |
       if e within t1
       then c1 else c2
 
-expressions:      
+expressions:
 e ::= b | obs(ot, f, t) | e1 op e2 | uop e1
 
 time:
@@ -88,7 +108,7 @@ uop ::=  not
 operator types:
 ot ::= int | bool
 ```
-where 
+where
 
 * n is a natural number
 * p is a party to the contract identified by an Ethereum address
@@ -100,104 +120,68 @@ where
 Addresses are written as `0x[0-9a-f]{40}`
 
 ## Examples
-
-### Example 1: Binary Option, a Simple Bet
-The simplest useful example is a binary option. Two parties are involved in the
-contract, and the contract holds a specific amount of tokens which either of the
-party will receive in full amount at the maturity of the contract. This contract
-is equivalent to a simple bet and the outcome will be determined by some kind of
-event whose result is read from an oracle.
-
-This contract will transfer 100 tokens to A if the oracle/data feed shows the
-value true at any time within two minutes. If that does not happen, 100 tokens
-are transferred to B. Both A and B need to put in 100 tokens for the contract to
-be considered activated.
-
+### Example 1: Future
+One of the simpler useful examples is a future contract.
+The code below describes the contract, namely a legal agreement to buy or
+sell something at a predetermined price at a specified time in the future,
+between two parties not knowing each other. The contract holds a specific amount of tokens which both parties will receive in full amount at the maturity of the contract. The function `both<c1,c2>` is
+executing both contracts `c1` and `c2`, in this case transferring the specified
+currencies and the specified amount to each of the parties.
 ```
-scale(
-   100,
-   100,
-   if obs(bool, addressDataFeedBool, 0) within minutes(2) then
-      transfer( eToroUSD, B, A)
-   else
-      transfer( eToroUSD, A, B)
-   )
+translate(
+    seconds(<Time>),
+    both(
+        scale(
+            <Upper limit>,
+            <Amount>,
+            transfer(
+                <Currency>,
+                <me>,
+                <Counterparty>
+            )
+        ),
+        scale(
+            <Upper limit>,
+            <Amount to receive>,
+            transfer(
+                <Currency to receive>,
+                <Counterparty>,
+                <me>
+            )
+        )
+    )
+)
 ```
-
-The three arguments to `transfer` are addresses: the address of the ERC20 smart
-contract of the tokens being transferred, the party that makes this payment, and
-the last argument is the party to receive this payment.
-
-The amounts are deposited through the function calls `approve` on the ERC20, and
-`activate` on the contract generated by `etlc` (see section "ABI of the produced
-contracts").
-
-The observable `obs` depends on some external information, for example the
-outcome of a sports event or something similar.
 
 ### Example 2: European put option, an Insurance Against a Drop in the ETH price
-
-Scenario: A owns 1 ETH and A would like an insurance of a drop in the ETH price
+Scenario: A owns 1 ETH and A would like insurance of a drop in the ETH price
 below 100 USD three months from now. So A would like a contract whose value plus
-the value of an ether is at least 100 USD. This can be achieved by the following
+the value of ether is at least 100 USD. This can be achieved by the following
 contract:
 ```
 translate(
-   days(90),
-   scale(
-      100,
-      max(0, 100 - obs(int, priceFeed, ETHUSD))
-      transfer(eToroUSD, B, A )))
+    days(90),
+    scale(
+        100,
+        max(0, 100 - obs(int, priceFeed, ETHUSD)),
+        transfer(USDEX, B, A )
+    )
+)
 ```
-If the ETH price at the strike time is 10 USD, then this contract will pay out
+If the ETH price at the strike time is 10 USD, then this contract will payout
 90 USD, thus guaranteeing A a value of 100 USD at the maturity of the contract.
-eToroUSD is the address of an ERC20-complaint token.
+eToroUSD is the address of an ERC20-compliant token.
 
 Note that the first parameter to the scale function (defining the token amount
 to lock in escrow) is important when the second parameter (the token amount) can
 depend on external information. Without the tokens in escrow, we would have no guarantee
-that the counterparty would have the liquidity needed at excecution time.
-
-### Example 3: Future
-The code below describes a future contract, namely a legal agreement to buy or
-sell something at a predetermined price at a specified time in the future,
-between two parties not knowning each other. The function `both<c1,c2>` is
-excecuting both contracts `c1` and `c2`, in this case transfering the specified
-currencies and the specified amount to each of the parties.
-
-```
-translate(
-   seconds(<Time>),
-   both(
-      scale(
-         <Upper limit>,
-         <Amount>,
-         transfer(
-            <Currency>,
-            <me>,
-            <Counterparty>
-         )
-      ),
-      scale(
-         <Upper limit>,
-         <Amount to receive>,
-         transfer(
-            <Currency to receive>,
-            <Counterparty>,
-            <me>
-         )
-      )
-   )
-)
-```
+that the counterparty would have the liquidity needed at execution time.
 
 ## Application Binary Interface (ABI) of the produced contracts
-
-The eToroLang (etl) contract compiles into the Ethereum's ABI and has two
+The Lira contract currently compiles into the Ethereum's ABI and has two
 methods: `activate()` and `execute()`.
  * `activate()` collects the margin from the parties' accounts and starts the
-   timer. Will only succeed if the parties have allowed the etl contract to
-   withdraw from their balance through the ERC20 contract call `approve`.
+   timer. Will only succeed if the parties have allowed the Lira contract to withdraw from their balance through the ERC20 contract call `approve`.
  * `execute()` checks whether any subparts of the contracts are ready to be paid
    out to the parties or any margins can be paid back.
 
@@ -216,81 +200,21 @@ $ lira -o build examples/BettingExample0.lir
 ```
 Remember to change the placement addresses in the examples with real ones.
 
-### Example 1: Future
+## Prerequisites
+Haskell Tool Stack is required as the development environment.
+To install follow their [README](https://docs.haskellstack.org/en/stable/README/)
+or execute the following statement:
+```
+$ curl -sSL https://get.haskellstack.org/ | sh
+```
 
-In this example, we will show how two parties not knowning each other can trade
-a future on the blockchain.
+# Future developments
+Lira is still a work in progress, and could greatly benefit from help from the community.
+The following points shows what we envision for Lira in the future.
 
-TODO (steps, screenshots, ...)
-
-## Running the system locally
-We now describe how to set up the various components needed to get the
-demonstration frontend up and running.
-
-At a high level, the system is comprised of three main components:
- 
-1. **Frontend** implements the web interface which is used for visualizing and
-   manipulating the contracts.<br>
-2. **Backend server** provides the data storage and compilation services for the
-   frontend.<br>
-3. **Compiler** compiles the eToroLang source code to EVM binary code providing
-   the contract features described above.
-
-### Dependencies
-Before proceeding, make sure that you have the following installed
-
- * `git`
- * `yarn`
- * `node.js` version [10.xx](https://nodejs.org) (12.x is not supported)
- * A browser with the [Metamask](http://metamask.io) extension installed
-
-### Running and installing
-In order to compile and run the demo client you need to go through the following
-steps.
-
-#### Starting the server
- 1. Clone the etorolang-demo-server repository:  
-    `git clone https://github.com/Firmo-Network/etorolang-demo-server`
- 1. Change diretory:  
-    `cd etorolang-demo-server`
- 1. Install dependencies:  
-    `yarn install`
- 1. Start the server  
-    `yarn start`
-
-#### Starting the client
-In a separate terminal window do:
-
- 1. Clone the etorolang-demo-server repository:  
-    `git clone https://github.com/Firmo-Network/etorolang-demo-client`
- 1. Change diretory:  
-    `cd etorolang-demo-client`
- 1. Install dependencies:  
-    `yarn install`
- 1. Start the client (will launch a browser)  
-    `yarn start`
-
-### Setting up Metamask
-Metamask is a convenient way to handle and create wallets and managing your
-private keys. Change the endpoint address private keys as follows:
-
-* Connect to a custom RPC endpoint with the address (*Networks -> Custom
-  RPC*):<br> `http://127.0.0.1:9545`
-* Import the accounts with the private keys below into Metamask (*Accounts ->
-  Import Account*):<br>
-  `ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f`<br>
-  `0dbbe8e4ae425a6d2687f1a7e3ba17bc98c673636790f1b8ad91193c05875ef1`   
-
-You are now able to create contracts using the interface.
-
-(TODO: ethereum.enable() needs to be called manually, but should be implemented
-on the frontend)
-
-### Notes
-
-* Since this is a demo only, all contracts are entered between the two parties
-  represented by the accounts belonging to the private keys, as the server
-  manages the keys for easy experience (for a more realistic demo, use the
-  [online sandbox demo](https://sandbox.firmo.network/)).
-* After a contract has expired, you will be able to see the change of the
-  balances of the two accounts according to the outcome of the contract.
+* Work with the community to get a security audit for the compiler
+* Enable fractional margin requirements into the contract language.
+  Currently, the contracts need to be fully collateralized.
+* Improve tooling by providing libraries that helps with easier startup
+* Seek funding for further research to extend the functionality of the language
+* Improve compiler documentation, both from the user's perspective and the developer's
