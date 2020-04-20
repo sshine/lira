@@ -1,3 +1,4 @@
+
 -- MIT License
 -- 
 -- Copyright (c) 2019 eToroX Labs
@@ -20,15 +21,28 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module EtlFmt where
+module LiraParserPropTest
+  ( tests
+  , prop_ppp_identity
+  )
+where
 
-import Lira.Contract.PP
-import EtlGen
-import IntermediateCompiler
-import Test.QuickCheck
+import           Lira.Parser
+import           Lira.Contract
+import           Lira.Contract.PP
+import           LiraGen
 
-main :: IO ()
-main = do
-  contract <- unVC <$> generate arbitrary
-  putStrLn $ "Before:\n"  ++ show (intermediateCompile contract)
-  putStrLn $ "\nAfter:\n" ++ show (intermediateCompileOptimize contract)
+import           Test.Hspec
+import           Test.QuickCheck
+
+tests :: Spec
+tests = do
+  it "is the inverse of a pretty-printer" $ do
+    property prop_ppp_identity
+
+prop_ppp_identity :: ValidContract -> Property
+prop_ppp_identity (ValidContract contract) =
+  counterexample ("Pretty-printed:\n" ++ etlPP contract)
+    $ case parseWrap (etlPP contract) of
+        Left  _         -> False
+        Right contract2 -> contract == contract2

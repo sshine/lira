@@ -22,7 +22,7 @@
 
 module EvmLanguageDefinition where
 
-import Data.Word
+import           Data.Word (Word8, Word32)
 
 type Word256 = (Word32, Word32, Word32, Word32, Word32, Word32, Word32, Word32)
 

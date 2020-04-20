@@ -20,15 +20,15 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module EtlFmt where
+module LiraFmt where
 
-import Lira.Contract.PP
-import EtlGen
-import IntermediateCompiler
-import Test.QuickCheck
+import           Lira.Contract.PP
+import           LiraGen
+import           IntermediateCompiler
+import           Test.QuickCheck
 
 main :: IO ()
 main = do
   contract <- unVC <$> generate arbitrary
-  putStrLn $ "Before:\n"  ++ show (intermediateCompile contract)
+  putStrLn $ "Before:\n" ++ show (intermediateCompile contract)
   putStrLn $ "\nAfter:\n" ++ show (intermediateCompileOptimize contract)

@@ -25,8 +25,8 @@ module EtlTestHelpers ( makeContract
                       , obsAddr, tokAddr, oneAddr, twoAddr
                       ) where
 
-import EtlLanguageDefinition
-import EtlParser (parse')
+import Lira.Contract
+import Lira.Parser (parse')
 import Data.Map as Map
 
 obsAddr, tokAddr, oneAddr, twoAddr :: Address

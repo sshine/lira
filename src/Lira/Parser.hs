@@ -25,15 +25,14 @@
 module Lira.Parser where
 
 -- file: Parser.hs
-import Lira.Contract
-import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Combinator as ParSecCom
+import           Lira.Contract
+import           Text.ParserCombinators.Parsec
+import           Text.ParserCombinators.Parsec.Combinator as ParSecCom
 
 parse' :: String -> Contract
-parse' s =
-  case parse contractParser "error" s of
-    Left err -> error (show err)
-    Right ast -> ast
+parse' s = case parse contractParser "error" s of
+  Left  err -> error (show err)
+  Right ast -> ast
 
 parseWrap :: String -> Either ParseError Contract
 parseWrap = parse contractParser "Parse error: "
@@ -45,7 +44,11 @@ contractParser = do
 
 contractParserH :: Parser Contract
 contractParserH =
-  transferTranslateParser <|> scaleParser <|> bothParser <|> ifWithinParser <|> zeroParser
+  transferTranslateParser
+    <|> scaleParser
+    <|> bothParser
+    <|> ifWithinParser
+    <|> zeroParser
 
 transferTranslateParser :: Parser Contract
 transferTranslateParser = do
@@ -179,9 +182,7 @@ ltgtExp = do
   ltgtExpOpt tv
 
 ltgtExpOpt :: Expr -> Parser Expr
-ltgtExpOpt inval = ltXXBranch inval <|>
-                   gtXXBranch inval <|>
-                   return inval
+ltgtExpOpt inval = ltXXBranch inval <|> gtXXBranch inval <|> return inval
 
 ltXXBranch :: Expr -> Parser Expr
 ltXXBranch e0 = do
@@ -221,8 +222,7 @@ plusExp = do
   plusExpOpt tv
 
 plusExpOpt :: Expr -> Parser Expr
-plusExpOpt inval =
-  plusBranch inval <|> minusBranch inval <|> return inval
+plusExpOpt inval = plusBranch inval <|> minusBranch inval <|> return inval
 
 plusBranch :: Expr -> Parser Expr
 plusBranch inval = do
@@ -328,7 +328,8 @@ observableLeaf = do
   symbol ","
   address <- getAddress
   symbol ","
-  key <- many1 $ choice $ map char (['a'..'z'] ++ ['A'..'Z'] ++ [ '0'..'9'])  -- We shall be consistent in the type of the key, perhaps use a string.
+  key <- many1 $ choice $ map char
+                              (['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'])  -- We shall be consistent in the type of the key, perhaps use a string.
   symbol ")"
   return $ Lit $ Observable t address key
 
@@ -349,7 +350,13 @@ getInteger = do
 -- Handle time
 getTime :: Parser Time
 getTime =
-  getNow <|> getSeconds0 <|> getSeconds1 <|> getMinutes <|> getHours <|> getDays <|> getWeeks
+  getNow
+    <|> getSeconds0
+    <|> getSeconds1
+    <|> getMinutes
+    <|> getHours
+    <|> getDays
+    <|> getWeeks
 
 getNow :: Parser Time
 getNow = do
@@ -420,10 +427,10 @@ getFree = do
 
 getAddress :: Parser Address
 getAddress = do
-    prefix <- symbol "0x"
-    addr   <- ParSecCom.count 40 hexDigit
-    spaces
-    return $ prefix ++ addr
+  prefix <- symbol "0x"
+  addr   <- ParSecCom.count 40 hexDigit
+  spaces
+  return $ prefix ++ addr
 
 getInt :: Parser Integer
 getInt = do

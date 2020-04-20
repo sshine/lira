@@ -22,8 +22,8 @@
 
 module EtlParserTest (tests, canonical_iw_source) where
 
-import EtlParser
-import EtlLanguageDefinition
+import Lira.Parser
+import Lira.Contract
 
 import Test.Hspec
 
