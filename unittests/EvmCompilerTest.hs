@@ -20,19 +20,21 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module EvmCompilerTest (tests) where
+module EvmCompilerTest
+  ( tests
+  )
+where
 
-import EtlLanguageDefinition
-import EvmLanguageDefinition
-import EvmCompiler
-import EvmCompilerHelper
-import IntermediateCompiler (emptyContract)
+import           Lira.Contract
+import           EvmLanguageDefinition
+import           EvmCompiler
+import           IntermediateCompiler           ( emptyContract )
 
-import Control.Monad
+import           Control.Monad
 
-import Test.Hspec
-import Test.QuickCheck
-import Text.Printf
+import           Test.Hspec
+import           Test.QuickCheck
+import           Text.Printf
 
 tests :: Spec
 tests = do

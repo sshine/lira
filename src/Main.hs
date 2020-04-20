@@ -23,18 +23,18 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 module Main where
 
-import EvmCompiler as EVMC
-import IntermediateCompiler as IMC
-import Lira.Parser as BP
-import Lira.TypeChecker as TC
+import           EvmCompiler                   as EVMC
+import           IntermediateCompiler          as IMC
+import           Lira.Parser                   as LP
+import           Lira.TypeChecker              as TC
 
-import Data.Aeson
+import           Data.Aeson
 --import qualified Data.Text.Lazy.IO as I (writeFile)
-import qualified Data.ByteString.Lazy as BS
-import Data.List.Split
-import GHC.Generics
-import System.Environment
-import System.Exit
+import qualified Data.ByteString.Lazy          as BS
+import           Data.List.Split
+import           GHC.Generics
+import           System.Environment
+import           System.Exit
 
 data AbiVarDefinition = AbiVarDefinition {
     name_ :: String

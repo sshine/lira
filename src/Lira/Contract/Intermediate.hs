@@ -22,9 +22,9 @@
 
 module Lira.Contract.Intermediate where
 
-import Lira.Contract
+import           Lira.Contract
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map.Strict               as Map
 
 type PartyIndex = Integer
 type PartyIdentifier = Integer

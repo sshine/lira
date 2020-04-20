@@ -20,15 +20,18 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module Main (main) where
+module Main
+  ( main
+  )
+where
 
-import qualified EtlParserTest
-import qualified EtlParserPropTest
+import qualified LiraParserTest
+import qualified LiraParserPropTest
 import qualified IntermediateCompilerTest
 import qualified TypeCheckerTest
 import qualified EvmCompilerTest
 
-import Test.Hspec
+import           Test.Hspec
 
 main :: IO ()
 main = hspec $ do

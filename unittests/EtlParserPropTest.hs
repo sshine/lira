@@ -23,10 +23,10 @@
 
 module EtlParserPropTest (tests, prop_ppp_identity) where
 
-import EtlParser
-import EtlLanguageDefinition
+import Lira.Parser
+import Lira.Contract
+import Lira.Contract.PP
 import EtlGen
-import EtlPP
 
 import Test.Hspec
 import Test.QuickCheck

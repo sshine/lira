@@ -25,9 +25,9 @@
 module Lira.Parser where
 
 -- file: Parser.hs
-import Lira.Contract
-import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Combinator as ParSecCom
+import           Lira.Contract
+import           Text.ParserCombinators.Parsec
+import           Text.ParserCombinators.Parsec.Combinator as ParSecCom
 
 parse' :: String -> Contract
 parse' s =

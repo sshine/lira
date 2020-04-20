@@ -20,19 +20,21 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module IntermediateCompilerTest (tests) where
+module IntermediateCompilerTest
+  ( tests
+  )
+where
 
-import qualified Data.Map.Strict as Map
-import EtlLanguageDefinition
+import qualified Data.Map.Strict               as Map
+import           Lira.Contract
+import           Lira.Contract.Intermediate
+import           Lira.Parser
 
-import EtlParser
+import           LiraParserTest          hiding ( tests )
+import           LiraTestHelpers
+import           IntermediateCompiler
 
-import EtlParserTest hiding (tests)
-import EtlTestHelpers
-import IntermediateCompiler
-import IntermediateLanguageDefinition
-
-import Test.Hspec
+import           Test.Hspec
 
 tests :: Spec
 tests

@@ -22,7 +22,7 @@
 
 module EtlFmt where
 
-import EtlPP
+import Lira.Contract.PP
 import EtlGen
 import IntermediateCompiler
 import Test.QuickCheck

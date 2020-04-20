@@ -22,25 +22,23 @@
 
 module EvmCompiler where
 
-import EvmLanguageDefinition
-import Lira.Contract hiding (Transfer)
-import Lira.Contract.Intermediate
-import IntermediateCompiler (emptyContract)
+import           EvmLanguageDefinition
+import           Lira.Contract.Intermediate
+import           Lira.Contract hiding ( Transfer )
+import           IntermediateCompiler           ( emptyContract )
 
-import Control.Monad.State
-import Control.Monad.Reader
+import           Control.Monad.State
+import           Control.Monad.Reader
 
-import Data.List (genericLength)
-import qualified Data.Map.Strict as Map
-
-import Data.Word
-import Data.Char (ord)
-import Data.ByteString (ByteString)
-import Data.ByteString.Char8(pack)
-
-import Crypto.Hash
-import Numeric (showHex)
-import Text.Printf (printf)
+import           Data.List                      ( genericLength )
+import qualified Data.Map.Strict               as Map
+import           Data.Word                      ( Word8, Word32 )
+import           Crypto.Hash (Keccak_256, Digest, hash)
+import           Data.ByteString                ( ByteString )
+import           Data.ByteString.Char8          ( pack )
+import           Data.Char                      ( ord )
+import           Numeric                        ( showHex )
+import           Text.Printf                    ( printf )
 
 -- State monad definitions
 data CompileEnv =

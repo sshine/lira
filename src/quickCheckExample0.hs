@@ -20,7 +20,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-import Test.QuickCheck
+import           Test.QuickCheck
 
 prop_revapp :: [Int] -> [Int] -> Bool
 prop_revapp xs ys = reverse (xs++ys) == reverse ys ++ reverse xs

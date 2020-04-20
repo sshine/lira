@@ -22,17 +22,15 @@
 
 module TypeCheckerTest where
 
-import EtlLanguageDefinition
+import           Lira.Contract
+import           Lira.Contract.Intermediate
+import           Lira.TypeChecker
+import           IntermediateCompiler
 
-import Data.Either
+import           Data.Either
 
-import IntermediateCompiler
-import IntermediateLanguageDefinition
-
-import TypeChecker
-
-import Test.Hspec
-import Test.QuickCheck
+import           Test.Hspec
+import           Test.QuickCheck
 
 tests :: Spec
 tests = do

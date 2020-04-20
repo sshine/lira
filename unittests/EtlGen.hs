@@ -22,7 +22,7 @@
 
 module EtlGen where
 
-import EtlLanguageDefinition
+import Lira.Contract
 import Test.QuickCheck
 
 -- Generate contracts that type-check

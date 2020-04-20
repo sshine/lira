@@ -22,7 +22,7 @@
 
 module Lira.TypeChecker where
 
-import Lira.Contract
+import           Lira.Contract
 
 data ExpType = BoolType
              | IntType deriving (Show, Eq)

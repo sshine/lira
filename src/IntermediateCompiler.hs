@@ -22,14 +22,14 @@
 
 module IntermediateCompiler where
 
-import Lira.Contract
-import Lira.Contract.Intermediate
+import           Lira.Contract.Intermediate
+import           Lira.Contract
 
-import Control.Monad.Reader
-import Control.Monad.State
+import           Control.Monad.Reader
+import           Control.Monad.State
 
-import Data.List
-import qualified Data.Map.Strict as Map
+import           Data.List
+import qualified Data.Map.Strict               as Map
 
 -- State monad definitions
 -- The intermediate compilation happens in a monad since we need to ascribe
