@@ -62,10 +62,12 @@ data IMemExp = IMemExp { _IMemExpBegin  :: Integer
 
 type ActivateMap = Map.Map (Address, PartyIndex) Integer
 
-type MarginRefundMap = Map.Map [(Integer, Bool)] [(Address, PartyIndex, Integer)]
+type MarginRefundMap
+  = Map.Map [(Integer, Bool)] [(Address, PartyIndex, Integer)]
 
 -- (path, marginRefundValue) = ([(memExpRef, branch (true or false))], (token address, recipient, amount))
-type MarginRefundMapElement = ([(Integer, Bool)], [(Address, PartyIndex, Integer)])
+type MarginRefundMapElement
+  = ([(Integer, Bool)], [(Address, PartyIndex, Integer)])
 
 type MarginRefundPath = [(Integer, Bool)]
 
