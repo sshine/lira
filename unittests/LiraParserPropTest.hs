@@ -1,3 +1,4 @@
+
 -- MIT License
 -- 
 -- Copyright (c) 2019 eToroX Labs
@@ -20,23 +21,28 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module Main
-  ( main
+module LiraParserPropTest
+  ( tests
+  , prop_ppp_identity
   )
 where
 
-import qualified LiraParserTest
-import qualified LiraParserPropTest
-import qualified IntermediateCompilerTest
-import qualified TypeCheckerTest
-import qualified EvmCompilerTest
+import           Lira.Parser
+import           Lira.Contract
+import           Lira.Contract.PP
+import           LiraGen
 
 import           Test.Hspec
+import           Test.QuickCheck
 
-main :: IO ()
-main = hspec $ do
-  describe "The parser"                LiraParserTest.tests
-  -- describe "The parser" EtlParserPropTest.tests
-  describe "The intermediate compiler" IntermediateCompilerTest.tests
-  describe "The type-checker"          TypeCheckerTest.tests
-  describe "The EVM compiler"          EvmCompilerTest.tests
+tests :: Spec
+tests = do
+  it "is the inverse of a pretty-printer" $ do
+    property prop_ppp_identity
+
+prop_ppp_identity :: ValidContract -> Property
+prop_ppp_identity (ValidContract contract) =
+  counterexample ("Pretty-printed:\n" ++ etlPP contract)
+    $ case parseWrap (etlPP contract) of
+        Left  _         -> False
+        Right contract2 -> contract == contract2

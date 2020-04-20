@@ -20,23 +20,32 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module Main
-  ( main
+module LiraTestHelpers
+  ( makeContract
+  , defaultAddressMap
+  , obsAddr
+  , tokAddr
+  , oneAddr
+  , twoAddr
   )
 where
 
-import qualified LiraParserTest
-import qualified LiraParserPropTest
-import qualified IntermediateCompilerTest
-import qualified TypeCheckerTest
-import qualified EvmCompilerTest
+import           Lira.Contract
+import           Lira.Parser                    ( parse' )
+import           Data.Map                      as Map
 
-import           Test.Hspec
+obsAddr, tokAddr, oneAddr, twoAddr :: Address
+obsAddr = "0x1111111111111111111111111111111111111111"
+tokAddr = "0x2222222222222222222222222222222222222222"
+oneAddr = "0x3333333333333333333333333333333333333333"
+twoAddr = "0x4444444444444444444444444444444444444444"
 
-main :: IO ()
-main = hspec $ do
-  describe "The parser"                LiraParserTest.tests
-  -- describe "The parser" EtlParserPropTest.tests
-  describe "The intermediate compiler" IntermediateCompilerTest.tests
-  describe "The type-checker"          TypeCheckerTest.tests
-  describe "The EVM compiler"          EvmCompilerTest.tests
+defaultAddressMap :: Map Char Address
+defaultAddressMap =
+  Map.fromList [('O', obsAddr), ('T', tokAddr), ('A', oneAddr), ('B', twoAddr)]
+
+makeContract :: Map Char Address -> String -> Contract
+makeContract addressMap contract = parse' contract'
+ where
+  contract' :: String
+  contract' = concatMap (\c -> findWithDefault [c] c addressMap) contract

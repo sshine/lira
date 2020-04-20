@@ -20,23 +20,15 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module Main
-  ( main
-  )
-where
+module LiraFmt where
 
-import qualified LiraParserTest
-import qualified LiraParserPropTest
-import qualified IntermediateCompilerTest
-import qualified TypeCheckerTest
-import qualified EvmCompilerTest
-
-import           Test.Hspec
+import           Lira.Contract.PP
+import           LiraGen
+import           IntermediateCompiler
+import           Test.QuickCheck
 
 main :: IO ()
-main = hspec $ do
-  describe "The parser"                LiraParserTest.tests
-  -- describe "The parser" EtlParserPropTest.tests
-  describe "The intermediate compiler" IntermediateCompilerTest.tests
-  describe "The type-checker"          TypeCheckerTest.tests
-  describe "The EVM compiler"          EvmCompilerTest.tests
+main = do
+  contract <- unVC <$> generate arbitrary
+  putStrLn $ "Before:\n" ++ show (intermediateCompile contract)
+  putStrLn $ "\nAfter:\n" ++ show (intermediateCompileOptimize contract)
