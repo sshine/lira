@@ -26,7 +26,7 @@ library:
     - directory >= 1.3.0.0
 
 executables:
-  lira: &lira
+  lirac: &lirac
     main: src/Main.hs
     dependencies:
       - lira
