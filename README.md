@@ -62,7 +62,7 @@ Before we give the full definition of the language, let's go through a few of
 the functions.
 
 To transfer a unit token from address `p1` to address `p2`, the `transfer(a, p1,
-p2)` function is used, where `a` is the token constract address (e.g. eToroUSD).
+p2)` function is used, where `a` is the token contract address (e.g. eToroUSD).
 
 Transferring an arbitrary token amount can be done by using `scale(n, e, c)`, where
 `n` is the maximum amount of tokens the contract will lock in escrow, `e` is an
@@ -170,7 +170,7 @@ translate(
 ```
 If the ETH price at the strike time is 10 USD, then this contract will payout
 90 USD, thus guaranteeing A a value of 100 USD at the maturity of the contract.
-eToroUSD is the address of an ERC20-compliant token.
+eToroUSD is the address of an ERC-20-compliant token.
 
 Note that the first parameter to the scale function (defining the token amount
 to lock in escrow) is important when the second parameter (the token amount) can
@@ -181,7 +181,7 @@ that the counterparty would have the liquidity needed at execution time.
 The Lira contract currently compiles into the Ethereum's ABI and has two
 methods: `activate()` and `execute()`.
  * `activate()` collects the margin from the parties' accounts and starts the
-   timer. Will only succeed if the parties have allowed the Lira contract to withdraw from their balance through the ERC20 contract call `approve`.
+   timer. Will only succeed if the parties have allowed the Lira contract to withdraw from their balance through the ERC-20 contract call `approve`.
  * `execute()` checks whether any subparts of the contracts are ready to be paid
    out to the parties or any margins can be paid back.
 
