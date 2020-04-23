@@ -26,9 +26,9 @@ module EvmCompilerTest
 where
 
 import           Lira.Contract
-import           EvmLanguageDefinition
-import           EvmCompiler
-import           IntermediateCompiler           ( emptyContract )
+import           Lira.Backends.Evm.EvmLanguageDefinition
+import           Lira.Backends.Evm.EvmCompiler
+import           Lira.Backends.IntermediateCompiler (emptyContract)
 
 import           Control.Monad
 

@@ -25,7 +25,7 @@ module TypeCheckerTest where
 import           Lira.Contract
 import           Lira.Contract.Intermediate
 import           Lira.TypeChecker
-import           IntermediateCompiler
+import           Lira.Backends.IntermediateCompiler
 
 import           Data.Either
 

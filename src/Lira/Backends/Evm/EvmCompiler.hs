@@ -20,12 +20,12 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module EvmCompiler where
+module Lira.Backends.Evm.EvmCompiler where
 
-import           EvmLanguageDefinition
-import           Lira.Contract.Intermediate
 import           Lira.Contract hiding ( Transfer )
-import           IntermediateCompiler           ( emptyContract )
+import           Lira.Contract.Intermediate
+import           Lira.Backends.IntermediateCompiler ( emptyContract )
+import           Lira.Backends.Evm.EvmLanguageDefinition
 
 import           Control.Monad.State
 import           Control.Monad.Reader

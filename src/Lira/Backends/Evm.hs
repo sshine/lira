@@ -1,6 +1,6 @@
--- MIT License
+--- MIT License
 -- 
--- Copyright (c) 2019 eToroX Labs
+-- Copyright (c) 2020 eToroX Labs
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module EtlFmt where
+module Lira.Backends.Evm where
 
-import Lira.Contract.PP
-import EtlGen
-import IntermediateCompiler
-import Test.QuickCheck
-
-main :: IO ()
-main = do
-  contract <- unVC <$> generate arbitrary
-  putStrLn $ "Before:\n"  ++ show (intermediateCompile contract)
-  putStrLn $ "\nAfter:\n" ++ show (intermediateCompileOptimize contract)
+import Lira.Backends.Evm.Abi
+import Lira.Backends.Evm.EvmCompiler

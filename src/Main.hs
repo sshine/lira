@@ -20,107 +20,20 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 module Main where
 
-import           EvmCompiler                   as EVMC
-import           IntermediateCompiler          as IMC
-import           Lira.Parser                   as LP
-import           Lira.TypeChecker              as TC
+import           Lira.Backends.Evm.EvmCompiler      as EVMC
+import           Lira.Backends.Evm.Abi
+import           Lira.Backends.IntermediateCompiler as IMC
+import           Lira.Parser                        as LP
+import           Lira.TypeChecker                   as TC
 
 import           Data.Aeson
---import qualified Data.Text.Lazy.IO as I (writeFile)
 import qualified Data.ByteString.Lazy          as BS
-import           Data.List.Split
-import           GHC.Generics
-import           System.Environment
-import           System.Exit
+import           Data.List.Split (splitOn)
+import           System.Environment (getArgs)
+import           System.Exit (exitFailure)
 
-data AbiVarDefinition = AbiVarDefinition {
-    name_ :: String
-  , type_ :: String
-  } deriving (Show)
-
-instance ToJSON AbiVarDefinition where
-  toJSON (AbiVarDefinition n t) = object ["name" .= n, "type" .= t]
-
-data AbiConstructorDefinition = AbiConstructorDefinition {
-    payable__ :: Bool
-  , type__    :: String
-  , inputs__  :: [AbiVarDefinition]
-  } deriving (Show)
-
-instance ToJSON AbiConstructorDefinition where
-  toJSON (AbiConstructorDefinition p t is) =
-    object ["payable" .= p, "type" .= t, "inputs" .= toJSON is]
-
-data AbiFunctionDefinition = AbiFunctionDefinition
-  { _name     :: String
-  , _type     :: String
-  , _payable  :: Bool
-  , _outputs  :: [AbiVarDefinition]
-  , _inputs   :: [AbiVarDefinition]
-  , _constant :: Bool
-  } deriving (Generic, Show)
-
-instance ToJSON AbiFunctionDefinition where
-  toJSON (AbiFunctionDefinition n t p os is c) = object
-    [ "name" .= n
-    , "type" .= t
-    , "payable" .= p
-    , "inputs" .= toJSON is
-    , "outputs" .= toJSON os
-    , "constant" .= c
-    ]
-
-data AbiEventDefinition = AbiEventDefinition
-  { _eventName      :: String
-  , _eventType      :: String
-  , _eventAnonymous :: Bool
-  , _eventInputs    :: [AbiVarDefinition]
-  } deriving (Generic, Show)
-
-instance ToJSON AbiEventDefinition where
-  toJSON (AbiEventDefinition n t a i) =
-    object ["name" .= n, "type" .= t, "inputs" .= i, "anonymous" .= a]
-
-data AbiDefinition = AbiDefinition {
-    constuctor :: Maybe AbiConstructorDefinition
-  , functions  :: [AbiFunctionDefinition]
-  , events     :: [AbiEventDefinition]
-  } deriving (Show)
-
--- The JSON type of this should be [abiConstructor, abiFucntions]
-instance ToJSON AbiDefinition where
-  toJSON (AbiDefinition constructor functions events) = case constructor of
-    Nothing -> toJSONList functions
-    -- DEVFIX: THIS NEEDS TO HAVE THE CONSTRUCTOR ADDED!!!
-    --Just c  -> toJSON $ ( [(toJSON c), (toJSONList functions)])
-    Just c  -> toJSON $ map toJSON functions ++ map toJSON events
-
--- What kind of type should this take as argument?
--- DEVQ: Perhaps this should be calculated in EvmCompile?
-getAbiDefinition :: AbiDefinition
-getAbiDefinition =
-  let constructor = Just $ AbiConstructorDefinition False "constructor" []
-      execute     = AbiFunctionDefinition "execute" "function" False [] [] False
-      activate = AbiFunctionDefinition "activate" "function" False [] [] False
-      take        = AbiFunctionDefinition "take"
-                                          "function"
-                                          False
-                                          []
-                                          [AbiVarDefinition "party" "uint256"]
-                                          False
-      activatedE = AbiEventDefinition "Activated" "event" False []
-  in  AbiDefinition constructor [execute, activate, take] [activatedE]
-
--- This function writes an ABI definition of the contract.
-writeAbiDef :: String -> String -> IO ()
-writeAbiDef outdir bn = do
-  let abi = getAbiDefinition
-  let fn  = outdir ++ "/" ++ bn ++ ".abi"
-  putStrLn $ "Writing to " ++ fn
-  BS.writeFile fn (encode abi)
 
 -- (outdir, bn, fp)
 args2fileInfo :: [String] -> (String, String, String)

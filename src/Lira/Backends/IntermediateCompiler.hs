@@ -20,10 +20,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module IntermediateCompiler where
+module Lira.Backends.IntermediateCompiler where
 
-import           Lira.Contract.Intermediate
 import           Lira.Contract
+import           Lira.Contract.Intermediate
 
 import           Control.Monad.Reader
 import           Control.Monad.State

@@ -26,13 +26,14 @@ module IntermediateCompilerTest
 where
 
 import qualified Data.Map.Strict               as Map
+
 import           Lira.Contract
 import           Lira.Contract.Intermediate
 import           Lira.Parser
+import           Lira.Backends.IntermediateCompiler
 
 import           LiraParserTest          hiding ( tests )
 import           LiraTestHelpers
-import           IntermediateCompiler
 
 import           Test.Hspec
 

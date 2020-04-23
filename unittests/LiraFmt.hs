@@ -23,8 +23,9 @@
 module LiraFmt where
 
 import           Lira.Contract.PP
+import           Lira.Backends.IntermediateCompiler
+
 import           LiraGen
-import           IntermediateCompiler
 import           Test.QuickCheck
 
 main :: IO ()
