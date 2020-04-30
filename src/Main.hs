@@ -20,20 +20,75 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import           Lira.Backends.Evm.EvmCompiler      as EVMC
-import           Lira.Backends.Evm.Abi
-import           Lira.Backends.IntermediateCompiler as IMC
-import           Lira.Parser                        as LP
-import           Lira.TypeChecker                   as TC
-
-import           Data.Aeson
-import qualified Data.ByteString.Lazy          as BS
+import           Data.Foldable (for_)
 import           Data.List.Split (splitOn)
+import           Data.Text (Text)
+import qualified Data.Text as Text
+import qualified Data.Text.IO as Text
+import           Data.Version (showVersion)
+import           Options.Applicative
+import           Paths_lira (version)
 import           System.Environment (getArgs)
 import           System.Exit (exitFailure)
+import           System.FilePath.Posix ((</>))
+import           System.IO (stderr)
 
+import qualified Lira.Backends.Evm as Evm
+
+type OutputFile = (FilePath, Text)
+type Backend = FilePath -> Text -> Either Text [OutputFile]
+
+backends :: [(Text, Backend)]
+backends = [ ("evm", Evm.compile) ]
+
+data Args = Args
+  { srcFile :: FilePath -- ^ The Lira contract file
+  , outDir  :: FilePath -- ^ The directory in which to place translation output
+  , backend :: Text     -- ^ The backend with which to perform translation
+  } deriving (Show)
+
+main :: IO ()
+main = runArgsParser >>= argsHandler
+
+runArgsParser :: IO Args
+runArgsParser = customExecParser (prefs showHelpOnError) argsParserInfo
+
+argsParserInfo :: ParserInfo Args
+argsParserInfo =
+  info (helper <*> argsParser) . mconcat $
+    [ fullDesc
+    , header ("Lira compiler version " <> showVersion version)
+    , progDesc "Compiles Lira contracts"
+    ]
+
+argsParser :: Parser Args
+argsParser = Args <$> srcFileParser <*> outDirParser <*> backendParser
+  where
+    srcFileParser = strArgument . mconcat $
+      [ metavar "<file.lir>"
+      ]
+
+    outDirParser = strOption . mconcat $
+      [ long "output"
+      , short 'o'
+      , metavar "DIRECTORY"
+      , help "Output directory for compiled contract"
+      , value "."
+      , showDefault
+      ]
+
+    backendParser = strOption . mconcat $
+      [ long "backend"
+      , short 'b'
+      , metavar "BACKEND"
+      , help "The code generator to use"
+      , value "evm"
+      , showDefault
+      ]
 
 -- (outdir, bn, fp)
 args2fileInfo :: [String] -> (String, String, String)
@@ -47,9 +102,10 @@ args2fileInfo ["-o", outdir, fp] =
   in  (outdir, bn, fp)
 args2fileInfo _ = ("", "", "")
 
+{-
 -- We would like to call 'Main -o "$outdir" <file>'
-main :: IO ()
-main = do
+main2 :: IO ()
+main2 = do
   files <- getArgs
   let (outdir, bn, fp) = args2fileInfo files
   case bn of
@@ -73,3 +129,29 @@ main = do
               putStrLn ("Writing to file " ++ binPath)
               writeAbiDef outdir bn
               writeFile binPath (assemble $ intermediateCompile astTC)
+-}
+
+argsHandler :: Args -> IO ()
+argsHandler Args { backend = backend, srcFile = srcFile, outDir = outDir } = do
+  case lookup backend backends of
+    Just compile -> do
+      srcText <- Text.readFile srcFile
+      case compile srcFile srcText of
+        Left err -> meh err
+        Right files -> for_ files $ \(outFile, outText) -> do
+          let outFilePath = outDir </> outFile
+          Text.hPutStrLn stderr ("Writing file " <> Text.pack outFilePath <> "...")
+          Text.writeFile outFilePath outText
+
+    Nothing -> meh $
+      "Unknown backend '" <> backend <> "'. " <>
+      "Known backends: " <> commas (map fst backends)
+
+  where
+    commas :: [Text] -> Text
+    commas = Text.intercalate ", "
+
+meh :: Text -> IO ()
+meh message = do
+  Text.hPutStrLn stderr message
+  exitFailure

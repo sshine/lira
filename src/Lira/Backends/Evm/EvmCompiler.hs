@@ -32,6 +32,8 @@ import           Control.Monad.Reader
 
 import           Data.List                      ( genericLength )
 import qualified Data.Map.Strict               as Map
+import qualified Data.Text                     as Text
+import           Data.Text                      ( Text )
 import           Data.Word                      ( Word8, Word32 )
 import           Crypto.Hash (Keccak_256, Digest, hash)
 import           Data.ByteString                ( ByteString )
@@ -108,8 +110,8 @@ sizeOfOpcode _               = 1
 ----------------------------------------------------------------------------
 -- Main method for this module. Returns binary.
 -- Check that there are not more than 2^8 transfercalls
-assemble :: IntermediateContract -> String
-assemble = concatMap ppEvm . transformPseudoInstructions . evmCompile . check
+assemble :: IntermediateContract -> Text
+assemble = Text.pack . concatMap ppEvm . transformPseudoInstructions . evmCompile . check
  where
   check :: IntermediateContract -> IntermediateContract
   check contract | length (getTransferCalls contract) > 256 =

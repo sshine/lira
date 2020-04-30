@@ -22,5 +22,20 @@
 
 module Lira.Backends.Evm where
 
-import Lira.Backends.Evm.Abi
-import Lira.Backends.Evm.EvmCompiler
+import           Data.Text (Text)
+import qualified Data.Text as Text
+
+import           Lira.Backends.Evm.Abi
+import           Lira.Backends.Evm.EvmCompiler (assemble)
+import           Lira.Backends.Evm.Abi (convert, abiDefinition)
+import           Lira.Backends.IntermediateCompiler (intermediateCompile)
+import           Lira.Parser (parseContract)
+import           Lira.TypeChecker (typeCheck)
+
+compile :: FilePath -> Text -> Either Text [(FilePath, Text)]
+compile srcFile srcText = do
+  contract <- parseContract srcFile srcText
+  typeCheck contract
+  pure [ ("file.abi", convert abiDefinition)
+       , ("file.bin", assemble (intermediateCompile contract))
+       ]

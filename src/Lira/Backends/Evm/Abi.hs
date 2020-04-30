@@ -26,7 +26,9 @@
 module Lira.Backends.Evm.Abi where
 
 import           Data.Aeson
-import qualified Data.ByteString.Lazy          as BS
+import           Data.ByteString.Lazy (toStrict)
+import           Data.Text (Text)
+import           Data.Text.Encoding (decodeUtf8)
 import           GHC.Generics
 
 data AbiVarDefinition = AbiVarDefinition {
@@ -93,24 +95,17 @@ instance ToJSON AbiDefinition where
 
 -- What kind of type should this take as argument?
 -- DEVQ: Perhaps this should be calculated in EvmCompile?
-getAbiDefinition :: AbiDefinition
-getAbiDefinition =
-  let constructor = Just $ AbiConstructorDefinition False "constructor" []
-      execute     = AbiFunctionDefinition "execute" "function" False [] [] False
-      activate = AbiFunctionDefinition "activate" "function" False [] [] False
-      take        = AbiFunctionDefinition "take"
-                                          "function"
-                                          False
-                                          []
-                                          [AbiVarDefinition "party" "uint256"]
-                                          False
-      activatedE = AbiEventDefinition "Activated" "event" False []
-  in  AbiDefinition constructor [execute, activate, take] [activatedE]
+abiDefinition :: AbiDefinition
+abiDefinition =
+  AbiDefinition constructor [execute, activate, take] [activatedE]
+  where
+    constructor = Just (AbiConstructorDefinition False "constructor" [])
+    execute = AbiFunctionDefinition "execute" "function" False [] [] False
+    activate = AbiFunctionDefinition "activate" "function" False [] [] False
+    take = AbiFunctionDefinition
+             "take" "function" False []
+             [AbiVarDefinition "party" "uint256"] False
+    activatedE = AbiEventDefinition "Activated" "event" False []
 
--- This function writes an ABI definition of the contract.
-writeAbiDef :: String -> String -> IO ()
-writeAbiDef outdir bn = do
-  let abi = getAbiDefinition
-  let fn  = outdir ++ "/" ++ bn ++ ".abi"
-  putStrLn $ "Writing to " ++ fn
-  BS.writeFile fn (encode abi)
+convert :: AbiDefinition -> Text
+convert = decodeUtf8 . toStrict . encode

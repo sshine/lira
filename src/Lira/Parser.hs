@@ -20,19 +20,27 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 module Lira.Parser where
 
--- file: Parser.hs
-import           Lira.Contract
+import           Data.Text (Text)
+import qualified Data.Text as Text
 import           Text.ParserCombinators.Parsec
 import           Text.ParserCombinators.Parsec.Combinator as ParSecCom
+
+import           Lira.Contract
 
 parse' :: String -> Contract
 parse' s = case parse contractParser "error" s of
   Left  err -> error (show err)
   Right ast -> ast
+
+parseContract :: FilePath -> Text -> Either Text Contract
+parseContract srcFile srcText =
+  case parse contractParser srcFile (Text.unpack srcText) of
+    Left err -> Left (Text.pack (show err))
+    Right contract -> Right contract
 
 parseWrap :: String -> Either ParseError Contract
 parseWrap = parse contractParser "Parse error: "

@@ -32,25 +32,23 @@ import           Data.Either
 import           Test.Hspec
 import           Test.QuickCheck
 
+--shouldTypeCheck :: Contract ->
+shouldTypeCheck contract = typeCheck contract `shouldSatisfy` isRight
+shouldFail contract = typeCheck contract `shouldSatisfy` isLeft
+
 tests :: Spec
 tests = do
-  it "basic transfer contracts" $ do
-    typeChecker transferContract `shouldSatisfy` isRight
+  it "basic transfer contracts" $
+    shouldTypeCheck transferContract
 
-  it "scaled transfer with valid input" $ do
-    scaleContract 10 (Lit (IntVal 22)) transferContract `shouldBe` head
-      (rights
-        [typeChecker $ scaleContract 10 (Lit (IntVal 22)) transferContract]
-      )
+  it "scaled transfer with valid input" $
+    shouldTypeCheck $ scaleContract 10 (Lit (IntVal 22)) transferContract
 
-  it "Scaled transfer with invalid input" $ do
-    typeChecker (scaleContract 10 (Lit (BoolVal False)) transferContract)
-      `shouldSatisfy` isLeft
+  it "Scaled transfer with invalid input" $
+    shouldFail $ scaleContract 10 (Lit (BoolVal False)) transferContract
 
-  it "Translate transfer valid input"
-    $          translateContract Now transferContract
-    `shouldBe` head
-                 (rights [typeChecker $ translateContract Now transferContract])
+  it "Translate transfer valid input" $
+    shouldTypeCheck $ translateContract Now transferContract
 
 transferContract :: Contract
 transferContract = Transfer
