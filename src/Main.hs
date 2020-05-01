@@ -90,47 +90,6 @@ argsParser = Args <$> srcFileParser <*> outDirParser <*> backendParser
       , showDefault
       ]
 
--- (outdir, bn, fp)
-args2fileInfo :: [String] -> (String, String, String)
-args2fileInfo [fp] =
-  let fPath = head $ splitOn ".bahr" $ head $ splitOn ".dag" fp
-      bn    = last $ splitOn "/" fPath
-  in  ("", bn, fp)
-args2fileInfo ["-o", outdir, fp] =
-  let fPath = head $ splitOn ".bahr" $ head $ splitOn ".dag" fp
-      bn    = last $ splitOn "/" fPath
-  in  (outdir, bn, fp)
-args2fileInfo _ = ("", "", "")
-
-{-
--- We would like to call 'Main -o "$outdir" <file>'
-main2 :: IO ()
-main2 = do
-  files <- getArgs
-  let (outdir, bn, fp) = args2fileInfo files
-  case bn of
-    "" -> do
-      putStrLn "Usage: Main [-o outdir] <file name>"
-      exitFailure
-    _ -> do
-      let binPath = outdir ++ "/" ++ bn ++ ".bin"
-      source <- readFile fp
-      let parseRes = LP.parseWrap source
-      case parseRes of
-        Left err -> putStrLn
-          ("Parse error! " ++ show err ++ "\n\nSource code:\n" ++ source)
-        -- DEVFIX: The error handling could probably be better here
-        -- Do we need checks after the parser is successful?
-        Right ast -> do
-          let typeCheck = TC.typeChecker ast
-          case typeCheck of
-            Left  errTC -> putStrLn ("Type check error! " ++ show errTC)
-            Right astTC -> do
-              putStrLn ("Writing to file " ++ binPath)
-              writeAbiDef outdir bn
-              writeFile binPath (assemble $ intermediateCompile astTC)
--}
-
 argsHandler :: Args -> IO ()
 argsHandler Args { backend = backend, srcFile = srcFile, outDir = outDir } = do
   case lookup backend backends of
