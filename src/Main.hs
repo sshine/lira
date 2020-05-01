@@ -54,6 +54,25 @@ data Args = Args
 main :: IO ()
 main = runArgsParser >>= argsHandler
 
+argsHandler :: Args -> IO ()
+argsHandler Args { backend = backend
+                 , srcFile = srcFile
+                 , outDir = outDir
+                 } = do
+  case lookup backend backends of
+    Just compile -> do
+      srcText <- Text.readFile srcFile
+      case compile srcFile srcText of
+        Left err -> meh err
+        Right files -> for_ files $ \(outFile, outText) -> do
+          let outFilePath = outDir </> outFile
+          Text.hPutStrLn stderr ("Writing file " <> Text.pack outFilePath <> "...")
+          Text.writeFile outFilePath outText
+
+    Nothing -> meh $
+      "Unknown backend '" <> backend <> "'. " <>
+      "Known backends: " <> commas (map fst backends)
+
 runArgsParser :: IO Args
 runArgsParser = customExecParser (prefs showHelpOnError) argsParserInfo
 
@@ -90,25 +109,8 @@ argsParser = Args <$> srcFileParser <*> outDirParser <*> backendParser
       , showDefault
       ]
 
-argsHandler :: Args -> IO ()
-argsHandler Args { backend = backend, srcFile = srcFile, outDir = outDir } = do
-  case lookup backend backends of
-    Just compile -> do
-      srcText <- Text.readFile srcFile
-      case compile srcFile srcText of
-        Left err -> meh err
-        Right files -> for_ files $ \(outFile, outText) -> do
-          let outFilePath = outDir </> outFile
-          Text.hPutStrLn stderr ("Writing file " <> Text.pack outFilePath <> "...")
-          Text.writeFile outFilePath outText
-
-    Nothing -> meh $
-      "Unknown backend '" <> backend <> "'. " <>
-      "Known backends: " <> commas (map fst backends)
-
-  where
-    commas :: [Text] -> Text
-    commas = Text.intercalate ", "
+commas :: [Text] -> Text
+commas = Text.intercalate ", "
 
 meh :: Text -> IO ()
 meh message = do
