@@ -25,7 +25,6 @@ module Lira.Backends.Evm where
 import           Data.Text (Text)
 import qualified Data.Text as Text
 
-import           Lira.Backends.Evm.Abi
 import           Lira.Backends.Evm.EvmCompiler (assemble)
 import           Lira.Backends.Evm.Abi (convert, abiDefinition)
 import           Lira.Backends.IntermediateCompiler (intermediateCompile)
