@@ -107,5 +107,5 @@ abiDefinition =
              [AbiVarDefinition "party" "uint256"] False
     activatedE = AbiEventDefinition "Activated" "event" False []
 
-convert :: AbiDefinition -> Text
-convert = decodeUtf8 . toStrict . encode
+encodeUtf8 :: ToJSON a => a -> Text
+encodeUtf8 = decodeUtf8 . toStrict . encode

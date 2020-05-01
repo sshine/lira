@@ -36,6 +36,6 @@ compile :: FilePath -> Text -> Either Text [(FilePath, Text)]
 compile srcFile srcText = do
   contract <- parseContract srcFile srcText
   typeCheck contract
-  pure [ ("file.abi", convert abiDefinition)
+  pure [ ("file.abi", encodeUtf8 abiDefinition)
        , ("file.bin", assemble (intermediateCompile contract))
        ]
