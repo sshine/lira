@@ -29,14 +29,13 @@ import           Data.List.Split (splitOn)
 import           Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text
-import           Data.Version (showVersion)
 import           Options.Applicative
-import           Paths_lira (version)
 import           System.Environment (getArgs)
 import           System.Exit (exitFailure)
 import           System.FilePath.Posix ((</>))
 import           System.IO (stderr)
 
+import           Lira.Version (showVersion, version)
 import qualified Lira.Backends.Evm as Evm
 
 type OutputFile = (FilePath, Text)
@@ -80,7 +79,7 @@ argsParserInfo :: ParserInfo Args
 argsParserInfo =
   info (helper <*> argsParser) . mconcat $
     [ fullDesc
-    , header ("Lira compiler version " <> showVersion version)
+    , header ("Lira compiler " <> showVersion version)
     , progDesc "Compiles Lira contracts"
     ]
 
