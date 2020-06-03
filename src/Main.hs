@@ -37,12 +37,16 @@ import           System.IO (stderr)
 
 import           Lira.Version (showVersion, version)
 import qualified Lira.Backends.Evm as Evm
+import qualified Lira.Backends.Solidity as Solidity
 
 type OutputFile = (FilePath, Text)
 type Backend = FilePath -> Text -> Either Text [OutputFile]
 
 backends :: [(Text, Backend)]
-backends = [ ("evm", Evm.compile) ]
+backends =
+  [ ("evm", Evm.compile)
+  , ("sol", Solidity.compile)
+  ]
 
 data Args = Args
   { srcFile :: FilePath -- ^ The Lira contract file

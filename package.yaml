@@ -25,6 +25,7 @@ dependencies:
   - evm-opcodes
   - optparse-applicative
   - filepath
+  - neat-interpolation ^>= 0.5.1
 
 library:
   source-dirs: src

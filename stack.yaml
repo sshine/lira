@@ -4,3 +4,5 @@ packages:
 extra-deps:
   - git: https://github.com/sshine/hs-evm-opcodes.git
     commit: b60348b4f4d8e548f5f2debbe498371b2a3f307c
+  - git: https://github.com/nikita-volkov/neat-interpolation
+    commit: 0fc1dd73eaaef824a133dc6119a9a394c35d5171
