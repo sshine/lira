@@ -114,9 +114,9 @@ assemble :: IntermediateContract -> Text
 assemble = Text.pack . concatMap ppEvm . transformPseudoInstructions . evmCompile . check
  where
   check :: IntermediateContract -> IntermediateContract
-  check contract | length (getTransferCalls contract) > 256 =
+  check contract | length (transferCalls contract) > 256 =
     error "Too many Transfer Calls"
-  check contract | length (getMemExps contract) > 128 =
+  check contract | length (memExps contract) > 128 =
     error "Too many Memory Expressions"
   check contract = contract
 
@@ -424,8 +424,8 @@ activateCheck =
 
 execute :: Compiler [EvmOpcode]
 execute = do
-  memExpCode <- concatMap executeMemExp <$> reader getMemExps
-  mrm        <- reader getMarginRefundMap
+  memExpCode <- concatMap executeMemExp <$> reader memExps
+  mrm        <- reader marginRefundMap
   let marginRefundCode =
         evalState (concatMapM executeMarginRefundM (Map.assocs mrm)) 0
   transferCallCode <- executeTransferCalls
@@ -600,8 +600,7 @@ path2highestIndexValue ((_i, _branch) : ls) = path2highestIndexValue ls
 -- Returns the code for executing all tcalls that function gets
 executeTransferCalls :: Compiler [EvmOpcode]
 executeTransferCalls = do
-  transferCalls <- reader getTransferCalls
-  opcodes       <- loop 0 transferCalls
+  opcodes <- loop 0 =<< reader transferCalls
 
   -- Prevent selfdestruct from running after each call
   return $ opcodes ++ [STOP] ++ selfdestruct
@@ -693,14 +692,14 @@ compileLit lit mo _label = case lit of
 
 executeTransferCallsHH :: TransferCall -> Integer -> Compiler [EvmOpcode]
 executeTransferCallsHH tc transferCounter = do
-  mes <- reader getMemExps
+  mes <- reader memExps
   let checkIfCallShouldBeMade =
         let checkIfTimeHasPassed =
                 [ push $ storageAddress CreationTimestamp
                 , SLOAD
                 , TIMESTAMP
                 , SUB
-                , push $ _delay tc
+                , push $ delay tc
                 , EVM_GT
                 , JUMPITO $ "method_end" ++ show transferCounter
                 ]
@@ -747,12 +746,12 @@ executeTransferCallsHH tc transferCounter = do
                   in  yieldStatement ++ passAndSkipStatement
         in  checkIfTimeHasPassed
               ++ checkIfTCHasBeenExecuted
-              ++ checkIfTcIsInActiveBranches (_memExpPath tc)
+              ++ checkIfTcIsInActiveBranches (memExpPath tc)
 
       callTransferToTcRecipient =
         runExprCompiler (CompileEnv 0 transferCounter 0x44 "amount_exp")
-                        (_amount tc)
-          ++ [ push (_maxAmount tc)
+                        (amount tc)
+          ++ [ push (maxAmount tc)
              , DUP2
              , DUP2
              , EVM_GT
@@ -762,8 +761,8 @@ executeTransferCallsHH tc transferCounter = do
              , POP
              ]
 
-          ++ getPartyFromStorage (_to tc)
-          ++ [ PUSH32 $ address2w256 (_tokenAddress tc)
+          ++ getPartyFromStorage (to tc)
+          ++ [ PUSH32 $ address2w256 (tokenAddress tc)
              , DUP3
              , FUNCALL "transfer_subroutine"
              , ISZERO
@@ -771,7 +770,7 @@ executeTransferCallsHH tc transferCounter = do
              ]
 
       checkIfTransferToTcSenderShouldBeMade =
-        [ push (_maxAmount tc)
+        [ push (maxAmount tc)
         , SUB
         , DUP1
         , push 0x0
@@ -786,8 +785,8 @@ executeTransferCallsHH tc transferCounter = do
         -- for the next call to transfer.
 
       callTransferToTcOriginator =
-        getPartyFromStorage (_from tc)
-          ++ [ PUSH32 $ address2w256 (_tokenAddress tc)
+        getPartyFromStorage (from tc)
+          ++ [ PUSH32 $ address2w256 (tokenAddress tc)
              , DUP3
              , FUNCALL "transfer_subroutine"
              ]
@@ -827,7 +826,7 @@ executeTransferCallsHH tc transferCounter = do
 -- TODO: Add unique labels.
 activate :: Compiler [EvmOpcode]
 activate = do
-  am <- reader getActivateMap
+  am <- reader activateMap
   return
     $  [JUMPDESTFROM "activate_method"]
     ++ concatMap activateMapElementToTransferFromCall (Map.assocs am)

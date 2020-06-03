@@ -35,28 +35,29 @@ import qualified Data.Map.Strict               as Map
 -- The intermediate compilation happens in a monad since we need to ascribe
 -- unique identifiers to our memory expressions (type: MemExp)
 
-data ScopeEnv =
-     ScopeEnv { _maxFactor         :: Integer
-              , _scaleFactor       :: Expr -> Expr
-              , _delayTerm         :: Integer
-              , _currentMemExpPath :: MemExpPath
-              }
+data ScopeEnv = ScopeEnv
+  { maxFactor         :: Integer
+  , scaleFactor       :: Expr -> Expr
+  , delayTerm         :: Integer
+  , currentMemExpPath :: MemExpPath
+  }
 
-data GlobalEnv =
-  GlobalEnv { _parties  :: [Party]
-            , _memExpId :: Maybe MemExpId
-            }
+data GlobalEnv = GlobalEnv
+  { _parties  :: [Party]
+  , _memExpId :: Maybe MemExpId
+  }
 
 type ICompiler a = ReaderT ScopeEnv (State GlobalEnv) a
 
 -- The marginRefundPath and memExpRs could be combined to reduce
 -- the number of fields in this recored by one.
 initialScope :: ScopeEnv
-initialScope = ScopeEnv { _maxFactor         = 1
-                        , _scaleFactor       = id
-                        , _delayTerm         = 0
-                        , _currentMemExpPath = []
-                        }
+initialScope = ScopeEnv
+  { maxFactor         = 1
+  , scaleFactor       = id
+  , delayTerm         = 0
+  , currentMemExpPath = []
+  }
 
 initialGlobal :: GlobalEnv
 initialGlobal = GlobalEnv { _parties = [], _memExpId = Nothing }
@@ -97,11 +98,10 @@ toSeconds t = case t of
 
 -- Main method of the intermediate compiler
 intermediateCompile :: Contract -> IntermediateContract
-intermediateCompile contract = evalState (runReaderT compile initialScope)
-                                         initialGlobal
- where
-  compile =
-    intermediateCompileM contract >>= intermediateCompileFinalizeParties
+intermediateCompile contract =
+  evalState (runReaderT compile initialScope) initialGlobal
+  where
+    compile = intermediateCompileM contract >>= intermediateCompileFinalizeParties
 
 intermediateCompileOptimize :: Contract -> IntermediateContract
 intermediateCompileOptimize = foldExprs . intermediateCompile
@@ -109,34 +109,34 @@ intermediateCompileOptimize = foldExprs . intermediateCompile
 intermediateCompileFinalizeParties
   :: IntermediateContract -> ICompiler IntermediateContract
 intermediateCompileFinalizeParties contract = do
-  GlobalEnv _parties _ <- get
-  return $ contract { getParties = _parties }
+  envParties <- _parties <$> get
+  return $ contract { parties = envParties }
 
 intermediateCompileM :: Contract -> ICompiler IntermediateContract
 intermediateCompileM (Transfer token from to) = do
   ScopeEnv maxFactor scaleFactor delayTerm memExpPath <- ask
   fromPartyId <- insertIfMissing from
   toPartyId   <- insertIfMissing to
-  let transferCall = TransferCall { _maxAmount    = maxFactor
-                                  , _amount       = scaleFactor (Lit (IntVal 1))
-                                  , _delay        = delayTerm
-                                  , _tokenAddress = token
-                                  , _from         = fromPartyId
-                                  , _to           = toPartyId
-                                  , _memExpPath   = memExpPath
+  let transferCall = TransferCall { maxAmount    = maxFactor
+                                  , amount       = scaleFactor (Lit (IntVal 1))
+                                  , delay        = delayTerm
+                                  , tokenAddress = token
+                                  , from         = fromPartyId
+                                  , to           = toPartyId
+                                  , memExpPath   = memExpPath
                                   }
 
   let activateMap = Map.fromList [((token, fromPartyId), maxFactor)]
   return (IntermediateContract [] [transferCall] [] activateMap Map.empty)
 
-intermediateCompileM (Scale maxFactor factorExp contract) = local adjustScale
-  $ intermediateCompileM contract
- where
-  adjustScale :: ScopeEnv -> ScopeEnv
-  adjustScale scopeEnv = scopeEnv
-    { _maxFactor   = maxFactor * _maxFactor scopeEnv
-    , _scaleFactor = \iExp -> MultExp (_scaleFactor scopeEnv iExp) factorExp
-    }
+intermediateCompileM (Scale scaleMaxFactor factorExp contract) =
+  local adjustScale $ intermediateCompileM contract
+  where
+    adjustScale :: ScopeEnv -> ScopeEnv
+    adjustScale scopeEnv = scopeEnv
+      { maxFactor   = scaleMaxFactor * maxFactor scopeEnv
+      , scaleFactor = \iExp -> MultExp (scaleFactor scopeEnv iExp) factorExp
+      }
 
 intermediateCompileM (Both contractA contractB) = do
   IntermediateContract _ tcs1 mes1 am1 mrm1 <- intermediateCompileM contractA
@@ -152,7 +152,7 @@ intermediateCompileM (Translate time contract) = local adjustDelay
  where
   adjustDelay :: ScopeEnv -> ScopeEnv
   adjustDelay scopeEnv =
-    scopeEnv { _delayTerm = toSeconds time + _delayTerm scopeEnv }
+    scopeEnv { delayTerm = toSeconds time + delayTerm scopeEnv }
 
 intermediateCompileM (IfWithin (MemExp time memExp) contractA contractB) = do
   memExpId <- newMemExpId
@@ -160,7 +160,7 @@ intermediateCompileM (IfWithin (MemExp time memExp) contractA contractB) = do
   -- adjustMarginRefundPath sets the environment up for the recursive call.
   -- In the two monads, only the marginRefundPath and the memExpID is changed in
   -- this recursive call.
-  delay    <- reader _delayTerm
+  delay    <- reader delayTerm
   let delayEnd = toSeconds time + delay
 
   icA <- local (extendMemExpPath (memExpId, True))
@@ -178,7 +178,7 @@ intermediateCompileM (IfWithin (MemExp time memExp) contractA contractB) = do
                     }
 
   -- MarginRefundMap
-  memExpPath <- reader _currentMemExpPath
+  memExpPath <- reader currentMemExpPath
   let marginRefundMap =
         Map.filter (not . Prelude.null)
           $ Map.insert (memExpPath ++ [(memExpId, True)]) (iw am2 am1)
@@ -194,7 +194,7 @@ intermediateCompileM (IfWithin (MemExp time memExp) contractA contractB) = do
  where
   extendMemExpPath :: (MemExpId, Branch) -> ScopeEnv -> ScopeEnv
   extendMemExpPath node scopeEnv =
-    scopeEnv { _currentMemExpPath = _currentMemExpPath scopeEnv ++ [node] }
+    scopeEnv { currentMemExpPath = currentMemExpPath scopeEnv ++ [node] }
 
   -- A boolean condition of True (left child) having a req. margin of
   -- 10 and the right child having a margin of 7 will mean that 3 may
@@ -213,13 +213,13 @@ intermediateCompileM Zero = return emptyContract
 
 foldExprs :: IntermediateContract -> IntermediateContract
 foldExprs contract = contract
-  { getTransferCalls = map foldTC (getTransferCalls contract)
-  , getMemExps       = map foldME (getMemExps contract)
+  { transferCalls = map foldTC (transferCalls contract)
+  , memExps       = map foldME (memExps contract)
   }
  where
   foldTC :: TransferCall -> TransferCall
   foldTC transferCall =
-    transferCall { _amount = foldExpr (_amount transferCall) }
+    transferCall { amount = foldExpr (amount transferCall) }
 
   foldME :: IMemExp -> IMemExp
   foldME memExp = memExp { _IMemExp = foldExpr (_IMemExp memExp) }

@@ -33,32 +33,33 @@ type MemExpId = Integer
 type Branch = Bool
 type MemExpPath = [(MemExpId, Branch)]
 
-data IntermediateContract =
-     IntermediateContract { getParties         :: [Party]
-                          , getTransferCalls   :: [TransferCall]
-                          , getMemExps         :: [IMemExp]
-                          , getActivateMap     :: ActivateMap
-                          , getMarginRefundMap :: MarginRefundMap
-                          } deriving (Show, Eq)
+data IntermediateContract = IntermediateContract
+  { parties         :: [Party]
+  , transferCalls   :: [TransferCall]
+  , memExps         :: [IMemExp]
+  , activateMap     :: ActivateMap
+  , marginRefundMap :: MarginRefundMap
+  } deriving (Show, Eq)
 
-data TransferCall =
-     TransferCall { _maxAmount    :: Integer
-                  , _amount       :: Expr
-                  , _delay        :: Integer
-                  , _tokenAddress :: Address
-                  , _from         :: PartyIndex
-                  , _to           :: PartyIndex
-                  , _memExpPath   :: MemExpPath
-                  } deriving (Show, Eq)
+data TransferCall = TransferCall
+  { maxAmount    :: Integer
+  , amount       :: Expr
+  , delay        :: Integer
+  , tokenAddress :: Address
+  , from         :: PartyIndex
+  , to           :: PartyIndex
+  , memExpPath   :: MemExpPath
+  } deriving (Show, Eq)
 
 -- DEVNOTE:
 -- We start by attempting to implement the evaluation of IMemExp values.
 -- Later we try to find out how to read them when tcalls are executed.
-data IMemExp = IMemExp { _IMemExpBegin  :: Integer
-                       , _IMemExpEnd    :: Integer
-                       , _IMemExpIdent  :: Integer
-                       , _IMemExp       :: Expr
-                       } deriving (Show, Eq)
+data IMemExp = IMemExp
+  { _IMemExpBegin  :: Integer
+  , _IMemExpEnd    :: Integer
+  , _IMemExpIdent  :: Integer
+  , _IMemExp       :: Expr
+  } deriving (Show, Eq)
 
 type ActivateMap = Map.Map (Address, PartyIndex) Integer
 
