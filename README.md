@@ -1,6 +1,5 @@
-<p align="center"><img width=30% src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-image.svg"></p>
-<p align="center"><img width=40% src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-text.svg"></p>
-<br/>
+<p align="center"><img width="20%" src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-image.svg"></p>
+<p align="center"><img width="30%" src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-text.svg"></p>
 <br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
