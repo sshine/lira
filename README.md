@@ -9,6 +9,8 @@
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
+# The Lira Language
+
 Lira is a declarative domain-specific language designed for expressing
 financial contracts that can be executed on the blockchain.
 
@@ -20,8 +22,8 @@ Lira is based on internationally recognized academic research. The language
 semantics are formally verified by [Bahr P., Berthold J., Elsman M.
 (2015)][bahr15], and its execution on the Ethereum blockchain is covered by
 [Egelund-Müller B., Elsman M., Henglein F., Ross O. (2017)][muller17]. The
-present implementation is credited to various authors; see
-[package.yaml][pyaml].
+present implementation was initiated by Værge, T., Gram, M. (2017) and is
+credited to various authors; see [package.yaml][pyaml].
 
 [bahr15]: https://bahr.io/pubs/entries/bahr15icfp.html
 [muller17]: https://github.com/etoroxlabs/lira/blob/master/docs/ross.pdf
