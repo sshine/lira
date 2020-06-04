@@ -9,18 +9,26 @@
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Lira is a declarative domain-specific language designed to be the backbone of
+Lira is a declarative domain-specific language designed for expressing
 financial contracts that can be executed on the blockchain.
 
-Lira aims at being simple and easy-to-follow allowing users
-to define simple yet highly complex financial contracts.
-Lira is formally verified and based on internationally
-recognized academic research
-([Egelund-Müller B, Elsman M, Henglein F, Ross O (2017)](https://github.com/etoroxlabs/lira/blob/master/docs/ross.pdf)).
+Lira aims at being simple and easy-to-follow allowing users with a financial
+background, but without extensive programming experience to simply define
+highly complex financial contracts.
+
+Lira is based on internationally recognized academic research. The language
+semantics are formally verified by [Bahr P., Berthold J., Elsman M.
+(2015)][bahr15], and its execution on the Ethereum blockchain is covered by
+[Egelund-Müller B., Elsman M., Henglein F., Ross O. (2017)][muller17]. The
+present implementation is credited to various authors; see
+[package.yaml][pyaml].
+
+[bahr15]: https://bahr.io/pubs/entries/bahr15icfp.html
+[muller17]: https://github.com/etoroxlabs/lira/blob/master/docs/ross.pdf
+[pyaml]: ./package.yaml
 
 This repository provides a Lira compiler that you can start using today.
-Currently, it only compiles to EVM but it can be extended
-with other backends as well.
+Currently, it only compiles to EVM but it can be extended with other backends.
 
 # Table of Contents
 <!--ts-->
