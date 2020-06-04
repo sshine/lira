@@ -62,30 +62,97 @@ intended and to only have a single interpretation.
 
 # The Lira Language
 
-Before we give the full definition of the language, let's go through a few of
-the functions.
+Let's begin with some examples.
 
-To transfer a unit token from address `p1` to address `p2`, the `transfer(a, p1,
-p2)` function is used, where `a` is the token contract address (e.g. eToroUSD).
+To transfer one unit of a tokenized asset, e.g. [`USDEX`][usdex], from Alice to Bob:
 
-Transferring an arbitrary token amount can be done by using `scale(n, e, c)`, where
-`n` is the maximum amount of tokens the contract will lock in escrow, `e` is an
-expression resolving in the actual amount of tokens to transfer and `c` is the
-ERC-20 token contract. We need to lock tokens in escrow since the actual token
-amount might be evaluated at runtime. The number of tokens to transfer can never
-exceed the maximum amount.
+```
+transfer(USDEX, Alice, Bob)
+```
 
-By combining the transfer function
-and the scale function above, we can transfer an arbitrary amount of tokens
-using `scale(a, e, transfer(a, p1, p2))`.
+[usdex]: https://www.etorox.com/exchange/us-dollar/
 
-If a contract should be executed at a specific time in the future,
-`translate(t,c1)` can be used, where `t` is the time offset.
+To transfer some other amount of an asset, a contract can be scaled:
 
-Notice how the contracts can be composed of simpler contracts by the
-constructors `transfer`, `scale` and `translate` (and a few more defined below).
+```
+scale(10, 10, transfer(USDEX, Alice, Bob))
+```
+
+The first 10 is a constant that denotes the maximum amount of tokens that will
+be locked in escrow before the contract is executed. The second 10 is an
+expression calculated at run-time execution and represents the actual amount
+of tokens to transfer.
+
+The expression can be variable at run-time by depending on *observables*, but
+it cannot exceed the maximum value known at compile-time.
+
+This example can be extended with an observable:
+
+```
+scale(
+  9000,
+  obs(int, PriceFeed, BTCUSDEX),
+  transfer(USDEX, Alice, Bob))
+```
+
+Here a quantity of `USDEX` tokens is transferred from Alice to Bob that depends
+on an external price feed, `PriceFeed`, and a `BTCUSDEX` key presumed to show
+the price of Bitcoin, but at most 9000. If the price, upon execution, is less,
+the remainder will be sent back to Alice, and if the price is more, only 9000
+`USDEX` is sent to Bob.
+
+To perform two transfers in one contract:
+
+```
+both(
+  scale(9000, obs(int, PriceFeed, BTCUSDEX), transfer(USDEX, Alice, Bob)),
+  transfer(WBTC, Bob, Alice))
+```
+
+Here, upon execution, Alice sends Bob a quantity of `USDEX` that corresponds to
+the price of one Bitcoin, but at most USD 9000, and Bob sends Alice one `WBTC`,
+an ERC-20 wrapped Bitcoin.
+
+A contract can be executed at some relative time offset in the future:
+
+```
+translate(
+  days(30),
+  transfer(WBTC, Bob, Alice))
+```
+
+This is relative to the time of contract activation.
+
+Lastly, a contract can be conditional based on a predicate and a time frame.
+The predicate may contain observables, and the time frame is also relative
+to the time of contract activation. For example:
+
+```
+scale(10, 10,
+  if obs(int, PriceFeed, BTCUSDEX) > 9000 within days(7)
+    then transfer(USDEX, Alice, Bob)
+    else transfer(USDEX, Bob, Alice))
+```
+
+Here Alice and Bob each bet 10 `USDEX` on whether the price of Bitcoin will go
+above 9000 USD within 7 days of contract activation. A one-sided variation of
+this bet that isn't active immediately after contract activation is shown here:
+
+```
+translate(
+  days(7),
+  if obs(int, PriceFeed, BTCUSDEX) > 9000 within days(7)
+    then scale(10, 10, transfer(USDEX, Alice, Bob))
+    else zero)
+```
+
+The price feed isn't checked until 7 days have passed, but at that point, upon
+executing the contract, it will evaluate whether Alice should send Bob 10 `USDEX`
+or not for an entire week, or until the condition is true. If not, the escrow
+will be transferred back to Alice.
 
 ## Definition
+
 Below is the full definition of the language written as a context-free grammar
 definition of the language in which the derivative contracts are written:
 
