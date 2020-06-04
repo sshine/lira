@@ -5,7 +5,6 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ![Haskell](https://img.shields.io/badge/haskell-lts--13.20-blue)
 [![Build Status](https://img.shields.io/circleci/build/github/etoroxlabs/lira)](https://circleci.com/gh/etoroxlabs/lira)
-![Dependencies](https://img.shields.io/discourse/https/community.lira.org/likes)
 [![GitHub Issues](https://img.shields.io/github/issues/etoroxlabs/lira.svg)](https://github.com/etoroxlabs/lira/issues)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
