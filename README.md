@@ -46,24 +46,22 @@ Currently, it only compiles to EVM but it can be extended with other backends.
 
 # Try the Lira demo - [demo.lira.org](https://demo.lira.org)
 
-To show a possible integration of the language, we provide a graphical
-frontend use-case for creating, deploying and monitoring future
-contracts. Behind the scenes, this frontend will generate
-corresponding Lira code which is subsequently compiled to EVM and
-deployed to Ethereum. By generating Lira code, we
-ensure that the static guarantees of the language apply regardless
-of frontend functionality. Additionally, the frontend makes it
-possible to view both the generated Lira code and the compiled EVM
-bytecode.
+To demonstrate one possible integration of the language, we provide a graphical
+front-end use-case for creating, deploying and monitoring future contracts.
+Behind the scenes, this front-end will generate corresponding Lira code which
+is subsequently compiled to EVM and deployed to Ethereum. By generating Lira
+code, we ensure that the static guarantees of the language apply regardless of
+front-end functionality. Additionally, the front-end makes it possible to view
+both the generated Lira code and the compiled EVM bytecode.
 
-Using a non-Turing complete DSL for this purpose has several
-advantages. In particular, the language is restricted such that using
-it to specify unintended behavior is impossible. Further, as the
-semantics of the language are formally verified, contracts specified
-in the language is guaranteed to behave as intended and to only have a
-single interpretation.
+Using a domain-specific language that isn't Turing-complete has several
+advantages. In particular, expressing unintended within the contract logic
+is not possible. Further, as the semantics of the language are formally
+verified, contracts specified in the language are guaranteed to behave as
+intended and to only have a single interpretation.
 
 # The Lira Language
+
 Before we give the full definition of the language, let's go through a few of
 the functions.
 
