@@ -32,21 +32,22 @@ credited to various authors; see [package.yaml][pyaml].
 This repository provides a Lira compiler that you can start using today.
 Currently, it only compiles to EVM but it can be extended with other backends.
 
-# Table of Contents
+## Table of Contents
 <!--ts-->
-  * [Try the Lira demo](#try-the-lira-demo---demoliraorg)
   * [The Lira Language](#the-lira-language)
-    * [Definition](#definition)
-    * [Examples](#examples)
+    * [Try the Lira demo](#try-the-lira-demo---demoliraorg)
+    * [Introduction](#introduction)
+    * [Syntax](#syntax)
+    * [More examples](#more-examples)
       * [Example 1: Future](#example-1-future)
       * [Example 2: European put option, an Insurance Against a Drop in the ETH price](#example-2-european-put-option-an-insurance-against-a-drop-in-the-eth-price)
     * [Application Binary Interface (ABI) of the produced contracts](#application-binary-interface-abi-of-the-produced-contracts)
-  * [Installation](#installation)
-    * [Prerequisites](#prerequisites)
-  * [Future developments](#future-developments)
+    * [Installation](#installation)
+      * [Prerequisites](#prerequisites)
+    * [Future developments](#future-developments)
 <!--te-->
 
-# Try the Lira demo - [demo.lira.org](https://demo.lira.org)
+## Try the Lira demo - [demo.lira.org](https://demo.lira.org)
 
 To demonstrate one possible integration of the language, we provide a graphical
 front-end use-case for creating, deploying and monitoring future contracts.
@@ -62,7 +63,7 @@ is not possible. Further, as the semantics of the language are formally
 verified, contracts specified in the language are guaranteed to behave as
 intended and to only have a single interpretation.
 
-# The Lira Language
+## Introduction
 
 Let's begin with some examples.
 
@@ -153,53 +154,57 @@ executing the contract, it will evaluate whether Alice should send Bob 10 `USDEX
 or not for an entire week, or until the condition is true. If not, the escrow
 will be transferred back to Alice.
 
-## Definition
+## Syntax
 
-Below is the full definition of the language written as a context-free grammar
-definition of the language in which the derivative contracts are written:
+Below is a full description of Lira's syntax.
 
 ```
-contracts:
-c ::= scale(n,e,c1) | zero | both(c1,c2) |
-      transfer(a, p1, p2) | translate(t,c1) |
-      if e within t1
-      then c1 else c2
+contract ::=
+    'transfer(' asset ',' party ',' party ')'
+  | 'scale(' max ',' expr ',' contract ')'
+  | 'both(' contract ',' contract ')'
+  | 'translate(' time ',' contract ')'
+  | 'if' expr 'within' time 'then' contract 'else' contract
+  | 'zero'
 
-expressions:
-e ::= b | obs(ot, f, t) | e1 op e2 | uop e1
+expr ::=
+    'true'
+  | 'false'
+  | expr binop expr
+  | unop expr
+  | 'obs(' obsType ',' obsAddress ',' obsKey ')'
+  | ['0'-'9']+
 
-time:
-t ::= now | u(n)
+time ::= 'now' | ['0'-'9']+ timeUnit
 
-time unit:
-u ::= seconds | minutes | hours | days | weeks
+timeUnit ::= 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks'
 
-operators:
-op ::= + | - | x | / | = | if | or | and | min | max
-uop ::=  not
+binop ::= '+' | '-' | 'x' | '/' | '=' | 'or' | 'and' | 'min' | 'max'
 
-operator types:
-ot ::= int | bool
+unop ::= 'not'
+
+obsType ::= 'int' | 'bool'
+
+obsAddress ::= address
+
+party ::= address
+
+address ::= '0x' ['0'-'9', 'a'-'f']{40}
 ```
-where
 
-* n is a natural number
-* p is a party to the contract identified by an Ethereum address
-* a is a token contract address
-* f is the address of a feed
-* b is a whole number
-* obs is an observable depending on external information
+## More examples
 
-Addresses are written as `0x[0-9a-f]{40}`
-
-## Examples
 ### Example 1: Future
-One of the simpler useful examples is a future contract.
-The code below describes the contract, namely a legal agreement to buy or
-sell something at a predetermined price at a specified time in the future,
-between two parties not knowing each other. The contract holds a specific amount of tokens which both parties will receive in full amount at the maturity of the contract. The function `both<c1,c2>` is
-executing both contracts `c1` and `c2`, in this case transferring the specified
-currencies and the specified amount to each of the parties.
+
+One of the simpler useful examples is a future contract.  The code below
+describes the contract, namely a legal agreement to buy or sell something at a
+predetermined price at a specified time in the future, between two parties not
+knowing each other. The contract holds a specific amount of tokens which both
+parties will receive in full amount at the maturity of the contract. The
+function `both<c1,c2>` is executing both contracts `c1` and `c2`, in this case
+transferring the specified currencies and the specified amount to each of the
+parties.
+
 ```
 translate(
     seconds(<Time>),
@@ -227,40 +232,45 @@ translate(
 ```
 
 ### Example 2: European put option, an Insurance Against a Drop in the ETH price
-Scenario: A owns 1 ETH and A would like insurance of a drop in the ETH price
-below 100 USD three months from now. So A would like a contract whose value plus
-the value of ether is at least 100 USD. This can be achieved by the following
-contract:
+
+Scenario: Alice owns 1 wrapped ETH and would like insurance of a drop in the
+ETH price below 100 USD three months from now. So Alice wants a contract whose
+value plus the value of ether is at least 100 USD. This can be achieved by the
+following contract:
+
 ```
 translate(
-    days(90),
-    scale(
-        100,
-        max(0, 100 - obs(int, priceFeed, ETHUSD)),
-        transfer(USDEX, B, A )
-    )
-)
+  days(90),
+  scale(
+    100,
+    max(0, 100 - obs(int, PriceFeed, ETHUSDEX)),
+    transfer(USDEX, Bob, Alice)))
 ```
-If the ETH price at the strike time is 10 USD, then this contract will payout
-90 USD, thus guaranteeing A a value of 100 USD at the maturity of the contract.
-eToroUSD is the address of an ERC-20-compliant token.
 
-Note that the first parameter to the scale function (defining the token amount
-to lock in escrow) is important when the second parameter (the token amount) can
-depend on external information. Without the tokens in escrow, we would have no guarantee
-that the counterparty would have the liquidity needed at execution time.
+If the ETH price at the strike time is 10 USD, then this contract will pay out
+90 USDEX, thus guaranteeing Alice a value of 100 USD at the maturity of the
+contract.
+
+The first parameter to `scale()` (the token amount to lock in escrow) is
+important when the second parameter (the token amount) depends on the external
+price feed.  Without the tokens in escrow we would have no guarantee that the
+counterparty has the asset at execution time.
 
 ## Application Binary Interface (ABI) of the produced contracts
+
 The Lira contract currently compiles into the Ethereum's ABI and has two
 methods: `activate()` and `execute()`.
+
  * `activate()` collects the margin from the parties' accounts and starts the
-   timer. Will only succeed if the parties have allowed the Lira contract to withdraw from their balance through the ERC-20 contract call `approve`.
- * `execute()` checks whether any subparts of the contracts are ready to be paid
-   out to the parties or any margins can be paid back.
+   timer. Will only succeed if the parties have allowed the Lira contract to
+   withdraw from their balance through the ERC-20 contract call `approve`.
+ * `execute()` checks whether any subparts of the contracts are ready to be
+   paid out to the parties or any margins can be paid back.
 
- `activate()` and `execute()` may change state.
+ `activate()` and `execute()` may change the state of the deployed contract.
 
-# Installation
+## Installation
+
 At the moment the only way to compile Lira contracts is to build the compiler manually.
 1. Build the compiler by running
 ```
@@ -273,7 +283,8 @@ $ lira -o build examples/BettingExample0.lir
 ```
 Remember to change the placement addresses in the examples with real ones.
 
-## Prerequisites
+### Prerequisites
+
 Haskell Tool Stack is required as the development environment.
 To install follow their [README](https://docs.haskellstack.org/en/stable/README/)
 or execute the following statement:
@@ -281,11 +292,12 @@ or execute the following statement:
 $ curl -sSL https://get.haskellstack.org/ | sh
 ```
 
-# Future developments
-Lira is still a work in progress, and could greatly benefit from help from the community.
-The following points shows what we envision for Lira in the future.
+## Future developments
 
-* Work with the community to get a security audit for the compiler
+Lira is still a work in progress and could greatly benefit from help from the
+community.  The following points shows what we envision for Lira in the future.
+
+* Work with the community to get a security audit of the compiler
 * Enable fractional margin requirements into the contract language.
   Currently, the contracts need to be fully collateralized.
 * Improve tooling by providing libraries that helps with easier startup
