@@ -71,76 +71,76 @@ canonicalNestedIfWithinTest = do
 
   transfers =
     [ TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567891"
-      , _from         = 0
-      , _to           = 0
-      , _memExpPath   = [(0, True), (1, True), (2, True)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567891"
+      , from         = 0
+      , to           = 0
+      , memExpPath   = [(0, True), (1, True), (2, True)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567892"
-      , _from         = 1
-      , _to           = 1
-      , _memExpPath   = [(0, True), (1, True), (2, False)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567892"
+      , from         = 1
+      , to           = 1
+      , memExpPath   = [(0, True), (1, True), (2, False)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567893"
-      , _from         = 2
-      , _to           = 2
-      , _memExpPath   = [(0, True), (1, False), (3, True), (4, True)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567893"
+      , from         = 2
+      , to           = 2
+      , memExpPath   = [(0, True), (1, False), (3, True), (4, True)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567894"
-      , _from         = 3
-      , _to           = 3
-      , _memExpPath   = [(0, True), (1, False), (3, True), (4, False)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567894"
+      , from         = 3
+      , to           = 3
+      , memExpPath   = [(0, True), (1, False), (3, True), (4, False)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567895"
-      , _from         = 4
-      , _to           = 4
-      , _memExpPath   = [(0, True), (1, False), (3, False)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567895"
+      , from         = 4
+      , to           = 4
+      , memExpPath   = [(0, True), (1, False), (3, False)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567896"
-      , _from         = 5
-      , _to           = 5
-      , _memExpPath   = [(0, False), (5, True)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567896"
+      , from         = 5
+      , to           = 5
+      , memExpPath   = [(0, False), (5, True)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567897"
-      , _from         = 6
-      , _to           = 6
-      , _memExpPath   = [(0, False), (5, False), (6, True)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567897"
+      , from         = 6
+      , to           = 6
+      , memExpPath   = [(0, False), (5, False), (6, True)]
       }
     , TransferCall
-      { _maxAmount    = 1
-      , _amount       = Lit (IntVal 1)
-      , _delay        = 0
-      , _tokenAddress = "0x1234567890123456789012345678901234567898"
-      , _from         = 7
-      , _to           = 7
-      , _memExpPath   = [(0, False), (5, False), (6, False)]
+      { maxAmount    = 1
+      , amount       = Lit (IntVal 1)
+      , delay        = 0
+      , tokenAddress = "0x1234567890123456789012345678901234567898"
+      , from         = 7
+      , to           = 7
+      , memExpPath   = [(0, False), (5, False), (6, False)]
       }
     ]
 
@@ -269,16 +269,16 @@ canonicalNestedIfWithinTest = do
       )
     ]
 
--- Test that the getActivateMap function returns a correct map given a function
+-- Test that the activateMap function returns a correct map given a function
 activateMapSimple :: Spec
 activateMapSimple = do
-  it "getActivateMapSimple" $ do
-    getActivateMap (intermediateCompile (parse' src)) `shouldBe` activateMap
+  it "activateMapSimple" $ do
+    activateMap (intermediateCompile (parse' src)) `shouldBe` activateMap'
 
  where
   src
     = "both( if true within seconds(1) then scale(1, 1, transfer(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,0xcccccccccccccccccccccccccccccccccccccccc)) else scale(7, 7, transfer(0xdddddddddddddddddddddddddddddddddddddddd,0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,0xffffffffffffffffffffffffffffffffffffffff)),  if true within seconds(2) then scale(17, 17, transfer(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,0xcccccccccccccccccccccccccccccccccccccccc)) else if true within seconds(3) then scale(53, 53, transfer(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,0xcccccccccccccccccccccccccccccccccccccccc)) else scale(101, 101, transfer(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,0xcccccccccccccccccccccccccccccccccccccccc)) )"
-  activateMap =
+  activateMap' =
     (Map.fromList
       [ (("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 0), 102)
       , (("0xdddddddddddddddddddddddddddddddddddddddd", 2), 7)
@@ -288,7 +288,7 @@ activateMapSimple = do
 marginRefundMapSimple :: Spec
 marginRefundMapSimple = do
   it "marginRefundMapSimple" $ do
-    getMarginRefundMap (intermediateCompile (parse' src)) `shouldBe` refundMap
+    marginRefundMap (intermediateCompile (parse' src)) `shouldBe` refundMap
 
  where
   src
@@ -304,15 +304,15 @@ marginRefundMapSimple = do
       ]
     )
 
--- Test that the getActivateMap works for the canonical IW source code
+-- Test that the activateMap works for the canonical IW source code
 activateMapCanonicalIw :: Spec
 activateMapCanonicalIw = do
-  it "getActivateMapCanonicalIw" $ do
-    getActivateMap (intermediateCompile (parse' canonical_iw_source))
-      `shouldBe` activateMap
+  it "activateMapCanonicalIw" $ do
+    activateMap (intermediateCompile (parse' canonical_iw_source))
+      `shouldBe` activateMap'
 
  where
-  activateMap =
+  activateMap' =
     (Map.fromList
       [ (("0x1234567890123456789012345678901234567891", 0), 1)
       , (("0x1234567890123456789012345678901234567892", 1), 1)
@@ -327,8 +327,8 @@ activateMapCanonicalIw = do
 
 refundMapCanonicalIw :: Spec
 refundMapCanonicalIw = do
-  it "getActivateMapCanonicalIw" $ do
-    getMarginRefundMap (intermediateCompile (parse' canonical_iw_source))
+  it "refundMapCanonicalIw" $ do
+    marginRefundMap (intermediateCompile (parse' canonical_iw_source))
       `shouldBe` activateMap
 
  where
@@ -415,21 +415,21 @@ timeTranslationIMemExpTest = do
   parties = [Bound oneAddr, Bound twoAddr]
 
   transfers =
-    [ TransferCall { _maxAmount    = 1
-                   , _amount       = Lit (IntVal 1)
-                   , _delay        = 120
-                   , _tokenAddress = tokAddr
-                   , _from         = 0
-                   , _to           = 1
-                   , _memExpPath   = [(0, True)]
+    [ TransferCall { maxAmount    = 1
+                   , amount       = Lit (IntVal 1)
+                   , delay        = 120
+                   , tokenAddress = tokAddr
+                   , from         = 0
+                   , to           = 1
+                   , memExpPath   = [(0, True)]
                    }
-    , TransferCall { _maxAmount    = 2
-                   , _amount       = MultExp (Lit (IntVal 1)) (Lit (IntVal 2))
-                   , _delay        = 120
-                   , _tokenAddress = tokAddr
-                   , _from         = 0
-                   , _to           = 1
-                   , _memExpPath   = [(0, False)]
+    , TransferCall { maxAmount    = 2
+                   , amount       = MultExp (Lit (IntVal 1)) (Lit (IntVal 2))
+                   , delay        = 120
+                   , tokenAddress = tokAddr
+                   , from         = 0
+                   , to           = 1
+                   , memExpPath   = [(0, False)]
                    }
     ]
 
@@ -461,13 +461,13 @@ zeroContractCodeTest = do
   parties = [Bound oneAddr, Bound twoAddr]
 
   transfers =
-    [ TransferCall { _maxAmount    = 1
-                   , _amount       = Lit (IntVal 1)
-                   , _delay        = 0
-                   , _tokenAddress = tokAddr
-                   , _from         = 0
-                   , _to           = 1
-                   , _memExpPath   = [(0, True)]
+    [ TransferCall { maxAmount    = 1
+                   , amount       = Lit (IntVal 1)
+                   , delay        = 0
+                   , tokenAddress = tokAddr
+                   , from         = 0
+                   , to           = 1
+                   , memExpPath   = [(0, True)]
                    }
     ]
 
@@ -499,13 +499,13 @@ basicTransferTest = do
   transferIC = IntermediateContract
     [Bound twoAddr, Bound oneAddr]
 
-    [ TransferCall { _maxAmount    = 1
-                   , _amount       = Lit (IntVal 1)
-                   , _delay        = 0
-                   , _tokenAddress = tokAddr
-                   , _to           = 1
-                   , _from         = 0
-                   , _memExpPath   = []
+    [ TransferCall { maxAmount    = 1
+                   , amount       = Lit (IntVal 1)
+                   , delay        = 0
+                   , tokenAddress = tokAddr
+                   , to           = 1
+                   , from         = 0
+                   , memExpPath   = []
                    }
     ]
 
