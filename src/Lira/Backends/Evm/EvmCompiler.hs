@@ -21,7 +21,17 @@
 -- SOFTWARE.
 
 module Lira.Backends.Evm.EvmCompiler
-  ( assemble
+  ( -- External interface
+    assemble
+  , ppEvm
+  , runCompiler
+  , runExprCompiler
+
+    -- Internals exposed for testing
+  , initialEnv
+  , push
+  , linker
+  , transformPseudoInstructions
   ) where
 
 import           Lira.Contract hiding ( Transfer )

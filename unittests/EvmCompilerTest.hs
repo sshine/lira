@@ -36,6 +36,9 @@ import           Test.Hspec
 import           Test.QuickCheck
 import           Text.Printf
 
+runExprCompiler' :: Expr -> [EvmOpcode]
+runExprCompiler' = runExprCompiler initialEnv
+
 tests :: Spec
 tests = do
   pushTests
@@ -315,23 +318,17 @@ compileLiteralExpressions = describe "Literals" $ do
   it "one byte literal"
     $          concatMap
                  ppEvm
-                 (runCompiler emptyContract initialEnv (compileExp (Lit (IntVal 5))))
+                 (runExprCompiler' (Lit (IntVal 5)))
     `shouldBe` "6005"
   it "Ten byte literal"
     $          concatMap
                  ppEvm
-                 (runCompiler emptyContract
-                              initialEnv
-                              (compileExp (Lit (IntVal (256 ^ 10 - 1))))
-                 )
+                 (runExprCompiler' (Lit (IntVal (256 ^ 10 - 1))))
     `shouldBe` "69ffffffffffffffffffff"
   it "32 byte literal"
     $ concatMap
         ppEvm
-        (runCompiler emptyContract
-                     initialEnv
-                     (compileExp (Lit (IntVal (256 ^ 32 - 1))))
-        )
+        (runExprCompiler' (Lit (IntVal (256 ^ 32 - 1))))
     `shouldBe` "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 compileLessThanExpressions :: Spec
@@ -339,19 +336,12 @@ compileLessThanExpressions = describe "Compile less-than expressions" $ do
   it "Compare two one byte values"
     $          concatMap
                  ppEvm
-                 (runCompiler emptyContract
-                              initialEnv
-                              (compileExp (LtExp (Lit (IntVal 5)) (Lit (IntVal 10))))
-                 )
+                 (runExprCompiler' (LtExp (Lit (IntVal 5)) (Lit (IntVal 10))))
     `shouldBe` "600a600510"
   it "Compare two largers values"
     $          concatMap
                  ppEvm
-                 (runCompiler
-                   emptyContract
-                   initialEnv
-                   (compileExp (LtExp (Lit (IntVal 256)) (Lit (IntVal (256 ^ 11 - 42)))))
-                 )
+                 (runExprCompiler' (LtExp (Lit (IntVal 256)) (Lit (IntVal (256 ^ 11 - 42)))))
     `shouldBe` "6affffffffffffffffffffd661010010"
 
 compileDivisionExpressions :: Spec
@@ -359,10 +349,7 @@ compileDivisionExpressions = describe "Compile divsion expression" $ do
   it "Divide two one byte values"
     $          concatMap
                  ppEvm
-                 (runCompiler emptyContract
-                              initialEnv
-                              (compileExp (DiviExp (Lit (IntVal 10)) (Lit (IntVal 5))))
-                 )
+                 (runExprCompiler' (DiviExp (Lit (IntVal 10)) (Lit (IntVal 5))))
     `shouldBe` "6005600a04"
 
 compileAdditionExpressions :: Spec
@@ -370,8 +357,5 @@ compileAdditionExpressions = describe "Compile addition expression" $ do
   it "Add two one byte values"
     $          concatMap
                  ppEvm
-                 (runCompiler emptyContract
-                              initialEnv
-                              (compileExp (AddiExp (Lit (IntVal 10)) (Lit (IntVal 5))))
-                 )
+                 (runExprCompiler' (AddiExp (Lit (IntVal 10)) (Lit (IntVal 5))))
     `shouldBe` "600a600501"
