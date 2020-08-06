@@ -20,7 +20,19 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-module Lira.Backends.Evm.EvmCompiler where
+module Lira.Backends.Evm.EvmCompiler
+  ( -- External interface
+    assemble
+  , ppEvm
+  , runCompiler
+  , runExprCompiler
+
+    -- Internals exposed for testing
+  , initialEnv
+  , push
+  , linker
+  , transformPseudoInstructions
+  ) where
 
 import           Lira.Contract hiding ( Transfer )
 import           Lira.Contract.Intermediate
@@ -28,7 +40,6 @@ import           Lira.Backends.IntermediateCompiler ( emptyContract )
 import           Lira.Backends.Evm.EvmLanguageDefinition
 
 import           Control.Monad.State
-import           Control.Monad.Reader
 
 import           Data.List                      ( genericLength )
 import qualified Data.Map.Strict               as Map
@@ -43,28 +54,24 @@ import           Numeric                        ( showHex )
 import           Text.Printf                    ( printf )
 
 -- State monad definitions
-data CompileEnv =
-     CompileEnv { labelCount        :: Integer
-                , transferCallCount :: Integer
-                , memOffset         :: Integer
-                , labelString       :: String
-                } deriving Show
+data CompileEnv = CompileEnv
+  { labelCount        :: Integer
+  , transferCallCount :: Integer
+  , memOffset         :: Integer
+  , labelString       :: String
+  , ceContract        :: IntermediateContract
+  } deriving Show
 
-type Compiler a = ReaderT IntermediateContract (State CompileEnv) a
+type Compiler a = State CompileEnv a
 
 initialEnv :: CompileEnv
-initialEnv = CompileEnv { labelCount        = 0
-                        , transferCallCount = 0
-                        , memOffset         = 0
-                        , labelString       = "mem_exp"
-                        }
-
-runCompiler :: IntermediateContract -> CompileEnv -> Compiler a -> a
-runCompiler intermediateContract compileEnv m =
-  evalState (runReaderT m intermediateContract) compileEnv
-
-runExprCompiler :: CompileEnv -> Expr -> [EvmOpcode]
-runExprCompiler env expr = runCompiler emptyContract env (compileExp expr)
+initialEnv = CompileEnv
+  { labelCount        = 0
+  , transferCallCount = 0
+  , memOffset         = 0
+  , labelString       = "mem_exp"
+  , ceContract        = emptyContract
+  }
 
 -- ATM, "Executed" does not have an integer. If it should be able to handle more
 -- than 256 tcalls, it must take an integer also.
@@ -111,28 +118,37 @@ sizeOfOpcode _               = 1
 -- Main method for this module. Returns binary.
 -- Check that there are not more than 2^8 transfercalls
 assemble :: IntermediateContract -> Text
-assemble = Text.pack . concatMap ppEvm . transformPseudoInstructions . evmCompile . check
- where
-  check :: IntermediateContract -> IntermediateContract
-  check contract | length (transferCalls contract) > 256 =
-    error "Too many Transfer Calls"
-  check contract | length (memExps contract) > 128 =
-    error "Too many Memory Expressions"
-  check contract = contract
+assemble
+  = Text.pack
+  . concatMap ppEvm
+  . transformPseudoInstructions
+  . compile 
+  . check
+
+check :: IntermediateContract -> IntermediateContract
+check contract
+  | length (transferCalls contract) > 256 = error "Too many Transfer Calls"
+  | length (memExps contract) > 128 = error "Too many Memory Expressions"
+  | otherwise = contract
 
 -- Given an IntermediateContract, returns the EvmOpcodes representing the contract
-evmCompile :: IntermediateContract -> [EvmOpcode]
-evmCompile intermediateContract = linker (constructor' ++ codecopy')
-  ++ linker body
+compile :: IntermediateContract -> [EvmOpcode]
+compile intermediateContract = linker (constructor' ++ codecopy') ++ linker body
  where
   constructor' = constructor intermediateContract
   codecopy'    = codecopy constructor' body
-  body =
-    jumpTable ++ subroutines ++ activateCheck ++ execute' ++ activate' ++ take'
-  execute'  = runCompiler intermediateContract initialEnv execute -- also contains selfdestruct when contract is fully executed
-  activate' = runCompiler intermediateContract initialEnv activate
-  take'     = runCompiler intermediateContract initialEnv evmTake
+  body         = jumpTable ++ subroutines ++ activateCheck ++ execute' ++ activate' ++ take'
+  execute'     = runCompiler executeBody -- also contains selfdestruct when contract is fully executed
+  activate'    = runCompiler activateBody
+  take'        = runCompiler takeBody
+
     -- The addresses of the constructor run are different from runs when DC is on BC
+
+runCompiler :: Compiler [EvmOpcode] -> [EvmOpcode]
+runCompiler = (`evalState` initialEnv)
+
+runExprCompiler :: CompileEnv -> Expr -> [EvmOpcode]
+runExprCompiler env = (`evalState` env) . compileExp
 
 linker :: [EvmOpcode] -> [EvmOpcode]
 linker opcodes' = linkerH 0 opcodes' opcodes'
@@ -422,10 +438,10 @@ activateCheck =
   , JUMPITO "global_throw"
   ]
 
-execute :: Compiler [EvmOpcode]
-execute = do
-  memExpCode <- concatMap executeMemExp <$> reader memExps
-  mrm        <- reader marginRefundMap
+executeBody :: Compiler [EvmOpcode]
+executeBody = do
+  memExpCode <- concatMap executeMemExp . memExps . ceContract <$> get
+  mrm        <- marginRefundMap . ceContract <$> get
   let marginRefundCode =
         evalState (concatMapM executeMarginRefundM (Map.assocs mrm)) 0
   transferCallCode <- executeTransferCalls
@@ -493,8 +509,8 @@ executeMemExp (IMemExp beginTime endTime count exp) =
                 ++ setToFalse
 
       jumpDestEvaluateExp = [JUMPDESTFROM $ "memExp_evaluate" ++ show count]
-      evaulateExpression =
-          runExprCompiler (CompileEnv 0 count 0x0 "mem_exp") exp
+      evaluateExpression =
+        runExprCompiler (initialEnv { transferCallCount = count }) exp
 
        -- eval to false but time not run out: don't set memdibit
       checkEvalResult = [ISZERO, JUMPITO $ "memExp_end" ++ show count]
@@ -509,7 +525,7 @@ executeMemExp (IMemExp beginTime endTime count exp) =
           ]
   in  checkIfExpShouldBeEvaluated
         ++ jumpDestEvaluateExp
-        ++ evaulateExpression
+        ++ evaluateExpression
         ++ checkEvalResult
         ++ setToTrue
         ++ [JUMPDESTFROM $ "memExp_end" ++ show count]
@@ -600,7 +616,7 @@ path2highestIndexValue ((_i, _branch) : ls) = path2highestIndexValue ls
 -- Returns the code for executing all tcalls that function gets
 executeTransferCalls :: Compiler [EvmOpcode]
 executeTransferCalls = do
-  opcodes <- loop 0 =<< reader transferCalls
+  opcodes <- loop 0 =<< gets (transferCalls . ceContract)
 
   -- Prevent selfdestruct from running after each call
   return $ opcodes ++ [STOP] ++ selfdestruct
@@ -692,7 +708,7 @@ compileLit lit mo _label = case lit of
 
 executeTransferCallsHH :: TransferCall -> Integer -> Compiler [EvmOpcode]
 executeTransferCallsHH tc transferCounter = do
-  mes <- reader memExps
+  mes <- gets (memExps . ceContract)
   let checkIfCallShouldBeMade =
         let checkIfTimeHasPassed =
                 [ push $ storageAddress CreationTimestamp
@@ -749,8 +765,11 @@ executeTransferCallsHH tc transferCounter = do
               ++ checkIfTcIsInActiveBranches (memExpPath tc)
 
       callTransferToTcRecipient =
-        runExprCompiler (CompileEnv 0 transferCounter 0x44 "amount_exp")
-                        (amount tc)
+        let exprEnv = initialEnv { transferCallCount = transferCounter
+                                 , memOffset         = 0x44
+                                 , labelString       = "amount_exp"
+                                 }
+        in runExprCompiler exprEnv (amount tc)
           ++ [ push (maxAmount tc)
              , DUP2
              , DUP2
@@ -824,9 +843,9 @@ executeTransferCallsHH tc transferCounter = do
 
 -- This might have to take place within the state monad to get unique labels for each TransferFrom call
 -- TODO: Add unique labels.
-activate :: Compiler [EvmOpcode]
-activate = do
-  am <- reader activateMap
+activateBody :: Compiler [EvmOpcode]
+activateBody = do
+  am <- gets (activateMap . ceContract)
   return
     $  [JUMPDESTFROM "activate_method"]
     ++ concatMap activateMapElementToTransferFromCall (Map.assocs am)
@@ -849,8 +868,8 @@ activateMapElementToTransferFromCall ((tokenAddress, partyIndex), amount) =
   subroutineCall     = [FUNCALL "transferFrom_subroutine"]
   throwIfReturnFalse = [ISZERO, JUMPITO "global_throw"]
 
-evmTake :: Compiler [EvmOpcode]
-evmTake = do
+takeBody :: Compiler [EvmOpcode]
+takeBody = do
   return
     $  [JUMPDESTFROM "take_method"]
     ++ notActivatedCheck
