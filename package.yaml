@@ -25,6 +25,9 @@ dependencies:
   - evm-opcodes
   - optparse-applicative
   - filepath
+  - megaparsec
+  - parser-combinators
+  - prettyprinter
 
 library:
   source-dirs: src
@@ -44,3 +47,4 @@ tests:
       - HUnit
       - QuickCheck
       - hspec
+      - hspec-megaparsec

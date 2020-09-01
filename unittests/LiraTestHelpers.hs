@@ -27,12 +27,18 @@ module LiraTestHelpers
   , tokAddr
   , oneAddr
   , twoAddr
+  , parse' -- FIXME: Deprecate this.
   )
 where
 
+import           Data.Either (fromRight)
+import qualified Data.Map as Map
+import           Data.Map (Map)
+import           Data.Text (Text)
+import qualified Data.Text as Text
+
 import           Lira.Contract
-import           Lira.Parser                    ( parse' )
-import           Data.Map                      as Map
+import           Lira.Contract.Parser (parseContract)
 
 obsAddr, tokAddr, oneAddr, twoAddr :: Address
 obsAddr = "0x1111111111111111111111111111111111111111"
@@ -44,8 +50,18 @@ defaultAddressMap :: Map Char Address
 defaultAddressMap =
   Map.fromList [('O', obsAddr), ('T', tokAddr), ('A', oneAddr), ('B', twoAddr)]
 
+-- FIXME: These wrappers were from before deprecating Lira.Parser in favor
+-- of Lira.Contract.Parser. This parser features better error handling and
+-- was made with Megaparsec. The tests need cleaning up and a starting point
+-- is the removal of makeContract and parse' below:
+
 makeContract :: Map Char Address -> String -> Contract
-makeContract addressMap contract = parse' contract'
- where
-  contract' :: String
-  contract' = concatMap (\c -> findWithDefault [c] c addressMap) contract
+makeContract addressMap = parse' . insertAddr
+  where
+    insertAddr srcCode =
+      srcCode >>= \c -> Map.findWithDefault [c] c addressMap
+
+parse' :: String -> Contract
+parse' s = case parseContract "error" (Text.pack s) of
+  Left  err -> error (Text.unpack err)
+  Right ast -> ast

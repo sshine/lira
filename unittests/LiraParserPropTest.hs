@@ -27,9 +27,11 @@ module LiraParserPropTest
   )
 where
 
-import           Lira.Parser
+import qualified Data.Text as Text
+
 import           Lira.Contract
 import           Lira.Contract.PP
+import           Lira.Contract.Parser
 import           LiraGen
 
 import           Test.Hspec
@@ -43,6 +45,6 @@ tests = do
 prop_ppp_identity :: ValidContract -> Property
 prop_ppp_identity (ValidContract contract) =
   counterexample ("Pretty-printed:\n" ++ etlPP contract)
-    $ case parseWrap (etlPP contract) of
+    $ case parseContract "" (Text.pack (etlPP contract)) of
         Left  _         -> False
         Right contract2 -> contract == contract2

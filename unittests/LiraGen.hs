@@ -163,8 +163,5 @@ instance Arbitrary MemExp where
   arbitrary =
     MemExp <$> (getAnyTime <$> arbitrary) <*> (getBoolExpr <$> arbitrary)
 
--- instance Arbitrary AnyParty where
---  arbitrary =
-
 partyGen :: Gen Party
 partyGen = oneof [Free <$> choose (0, 255), Bound <$> addressGen]

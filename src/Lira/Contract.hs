@@ -85,6 +85,7 @@ data ObservableType = OBool | OInteger deriving (Show, Eq)
 data Party = Bound Address
            | Free Integer deriving (Show, Eq)
 
+-- TODO: Change TokenSymbol and Address to newtype wrappers around Text.
 type TokenSymbol = String
 type Address = String
 

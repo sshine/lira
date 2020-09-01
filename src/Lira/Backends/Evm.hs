@@ -28,7 +28,7 @@ import qualified Data.Text as Text
 import           Lira.Backends.Evm.EvmCompiler (assemble)
 import           Lira.Backends.Evm.Abi (encodeUtf8, abiDefinition)
 import           Lira.Backends.IntermediateCompiler (intermediateCompile)
-import           Lira.Parser (parseContract)
+import           Lira.Contract.Parser (parseContract)
 import           Lira.TypeChecker (typeCheck)
 
 compile :: FilePath -> Text -> Either Text [(FilePath, Text)]
