@@ -30,7 +30,6 @@ import           Lira.Backends.IntermediateCompiler
 import           Data.Either
 
 import           Test.Hspec
-import           Test.QuickCheck
 
 --shouldTypeCheck :: Contract ->
 shouldTypeCheck contract = typeCheck contract `shouldSatisfy` isRight

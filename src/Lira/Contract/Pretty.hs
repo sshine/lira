@@ -26,7 +26,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Lira.Contract.Pretty
-  ( pp
+  ( printContract
   ) where
 
 import Data.Text (Text, pack)
@@ -35,8 +35,8 @@ import Data.Text.Prettyprint.Doc.Render.Text (renderStrict)
 
 import Lira.Contract
 
-pp :: Contract -> Text
-pp = renderStrict . layoutPretty defaultLayoutOptions . ppC
+printContract :: Contract -> Text
+printContract = renderStrict . layoutPretty defaultLayoutOptions . ppC
 
 ppC :: Contract -> Doc ann
 ppC (Transfer tok from to) = ppFun "transfer" [pretty (pack tok), ppParty from, ppParty to]
@@ -104,26 +104,32 @@ isAssoc e = case e of
   _           -> False
 
 ppBinOp :: Expr -> Expr -> Expr -> Doc ann
-ppBinOp parentE leftE rightE = ppBinOp' leftE <+> pretty op <+> ppBinOp' rightE
- where
-  ppBinOp' :: Expr -> Doc ann
-  ppBinOp' e | prec e < prec parentE = ppExpr e
-  ppBinOp' e | prec e == prec parentE && isAssoc e && isAssoc parentE = ppExpr e
-  ppBinOp' e | otherwise = tupled [ppExpr e]
+ppBinOp parentE leftE rightE =
+  ppBinOp' leftE True <+> pretty op <+> ppBinOp' rightE False
+  where
+    ppBinOp' :: Expr -> Bool -> Doc ann
+    ppBinOp' e isLeft
+      | prec e < prec parentE = ppExpr e
+      | prec e == prec parentE && isLeftAssociative e isLeft = ppExpr e
+      | otherwise = tupled [ppExpr e]
 
-  op :: Text
-  op = case parentE of
-    MultExp   _ _ -> "*"
-    DiviExp   _ _ -> "/"
-    AddiExp   _ _ -> "+"
-    SubtExp   _ _ -> "-"
-    LtExp     _ _ -> "<"
-    GtExp     _ _ -> ">"
-    EqExp     _ _ -> "="
-    GtOrEqExp _ _ -> ">="
-    LtOrEqExp _ _ -> "<="
-    AndExp    _ _ -> "and"
-    OrExp     _ _ -> "or"
+    isLeftAssociative :: Expr -> Bool -> Bool
+    isLeftAssociative e isLeft =
+      isAssoc e && isAssoc parentE && isLeft
+
+    op :: Text
+    op = case parentE of
+      MultExp   _ _ -> "*"
+      DiviExp   _ _ -> "/"
+      AddiExp   _ _ -> "+"
+      SubtExp   _ _ -> "-"
+      LtExp     _ _ -> "<"
+      GtExp     _ _ -> ">"
+      EqExp     _ _ -> "="
+      GtOrEqExp _ _ -> ">="
+      LtOrEqExp _ _ -> "<="
+      AndExp    _ _ -> "and"
+      OrExp     _ _ -> "or"
 
 ppExpr :: Expr -> Doc ann
 ppExpr e = case e of

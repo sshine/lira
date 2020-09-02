@@ -23,28 +23,35 @@
 
 module LiraParserPropTest
   ( tests
-  , prop_ppp_identity
+  , hprop_ParsePrettyPrintIdentity
   )
 where
 
 import qualified Data.Text as Text
 
+import           Data.Text (unpack)
+
 import           Lira.Contract
-import           Lira.Contract.PP
-import           Lira.Contract.Parser
+import           Lira.Contract.Pretty (printContract)
+import           Lira.Contract.Parser (parseContract')
 import           LiraGen
 
+import           Hedgehog
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
 import           Test.Hspec
-import           Test.QuickCheck
+import           Test.Hspec.Hedgehog (PropertyT, forAll, hedgehog, (===))
+
 
 tests :: Spec
-tests = do
-  it "is the inverse of a pretty-printer" $ do
-    property prop_ppp_identity
+tests =
+  describe "parseContract/printContract" $
+    it "are inverses" $
+      hedgehog hprop_ParsePrettyPrintIdentity
 
-prop_ppp_identity :: ValidContract -> Property
-prop_ppp_identity (ValidContract contract) =
-  counterexample ("Pretty-printed:\n" ++ etlPP contract)
-    $ case parseContract "" (Text.pack (etlPP contract)) of
-        Left  _         -> False
-        Right contract2 -> contract == contract2
+hprop_ParsePrettyPrintIdentity :: PropertyT IO ()
+hprop_ParsePrettyPrintIdentity = do
+  c <- forAll contractGen
+  let s = printContract c
+  got <- evalEither (parseContract' "" s)
+  c === got

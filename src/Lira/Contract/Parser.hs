@@ -95,13 +95,11 @@ timeP = choice
 
 exprP :: Parser Expr
 exprP = ifExprP <|> makeExprParser termP
-  [ [ InfixL (OrExp <$ keyword "or") ]
-  , [ InfixL (AndExp <$ keyword "and") ]
-  , [ Prefix (NotExp <$ keyword "not") ]
+  [ [ InfixL (MultExp <$ symbol "*")
+    , InfixL (DiviExp <$ symbol "/")
+    ]
   , [ InfixL (AddiExp <$ symbol "+")
     , InfixL (SubtExp <$ symbol "-")
-    , InfixL (MultExp <$ symbol "*")
-    , InfixL (DiviExp <$ symbol "/")
     ]
   , [ InfixN (EqExp <$ symbol "=")
     , InfixN (GtOrEqExp <$ symbol ">=")
@@ -109,8 +107,11 @@ exprP = ifExprP <|> makeExprParser termP
     , InfixN (LtExp <$ symbol "<")
     , InfixN (GtExp <$ symbol ">")
     ]
+  , [ InfixL (AndExp <$ keyword "and") ]
+  , [ InfixL (OrExp <$ keyword "or") ]
   ]
 
+-- FIXME: Handles 0 whitespace between 'if' and arg. Use 'keyword' approach from hs-jq.
 ifExprP :: Parser Expr
 ifExprP =
   IfExp <$> (symbol "if" *> parens exprP)
@@ -121,8 +122,9 @@ termP :: Parser Expr
 termP = choice
   [ comb "min" $ MinExp <$> (exprP <* symbol ",") <*> exprP
   , comb "max" $ MaxExp <$> (exprP <* symbol ",") <*> exprP
-  , symbol "true" $> Lit (BoolVal True)
-  , symbol "false" $> Lit (BoolVal False)
+  , keyword "true" $> Lit (BoolVal True)
+  , keyword "false" $> Lit (BoolVal False)
+  , (keyword "not" $> NotExp) <*> parens exprP
   , Lit . IntVal <$> integerP
   , comb "obs" $ fmap Lit obsP
   , parens exprP

@@ -45,6 +45,7 @@ tests:
     dependencies:
       - lira
       - HUnit
-      - QuickCheck
+      - hedgehog
       - hspec
+      - hspec-hedgehog
       - hspec-megaparsec

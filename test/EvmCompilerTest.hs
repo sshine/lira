@@ -32,8 +32,11 @@ import           Lira.Backends.IntermediateCompiler (emptyContract)
 
 import           Control.Monad
 
+import           Hedgehog
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
 import           Test.Hspec
-import           Test.QuickCheck
+import           Test.Hspec.Hedgehog (PropertyT, forAll, hedgehog, (===))
 import           Text.Printf
 
 runExprCompiler' :: Expr -> [EvmOpcode]
@@ -72,12 +75,15 @@ pushTests = describe "push" $ do
     ppEvm (push $ 256 * 256 * 256 - 1) `shouldBe` "62ffffff"
     ppEvm (push $ 256 * 256 * 256) `shouldBe` "6301000000"
 
-  it "compiles to the same as PUSH1" $ forM_ [0 .. 255] $ \i ->
-    ppEvm (push i) `shouldBe` ppEvm (PUSH1 $ fromIntegral i)
+  it "compiles to the same as PUSH1" $ forM_ [0 .. 255] $
+    \i -> ppEvm (push i) `shouldBe` ppEvm (PUSH1 $ fromIntegral i)
 
-  it "compiles to the same as PUSH4"
-    $ forAll (choose (256 * 256 * 256, 256 * 256 * 256 * 256 - 1))
-    $ \i -> ppEvm (push i) `shouldBe` ppEvm (PUSH4 $ fromIntegral i)
+  it "compiles to the same as PUSH4" $
+    hedgehog $ do
+      let lower = 256 * 256 * 256
+      let upper = 256 * 256 * 256 * 256 - 1
+      i <- forAll (Gen.integral (Range.constant lower upper))
+      ppEvm (push i) === ppEvm (PUSH4 (fromIntegral i))
 
   -- 2:  256^1 - 256^2 - 1
   -- 3:  256^2 - 256^3 - 1
@@ -85,16 +91,18 @@ pushTests = describe "push" $ do
   -- ...
   -- 32: 256^31 - 256^32 - 1
   forM_ [2 .. 32] $ \n ->
-    it ("compiles to the same as PUSH" ++ show n)
-      $ forAll (choose (256 ^ (n - 1), 256 ^ n - 1))
-      $ \i -> do
-          let hex = ppEvm (push i)
+    it ("compiles to the same as PUSH" ++ show n) $
+      hedgehog $ do
+        let lower = 256 ^ (n - 1)
+        let upper = (256 ^ n) - 1
+        i <- forAll (Gen.integral (Range.constant lower upper))
+        let hex = ppEvm (push i)
 
-          -- The right instruction is used.
-          Prelude.take 2 hex `shouldBe` printf "%02x" (0x60 + n - 1 :: Int)
+        -- The right instruction is used.
+        Prelude.take 2 hex === printf "%02x" (0x60 + n - 1 :: Int)
 
-          -- The hex-encoded number decodes properly.
-          read ("0x" ++ drop 2 hex) `shouldBe` (i :: Integer)
+        -- The hex-encoded number decodes properly.
+        read ("0x" ++ drop 2 hex) === (i :: Integer)
 
 preLinker0 :: [EvmOpcode]
 preLinker0 = [JUMPTO "label0", POP, JUMPDESTFROM "label0"]

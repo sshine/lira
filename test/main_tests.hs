@@ -36,7 +36,7 @@ import           Test.Hspec
 main :: IO ()
 main = hspec $ do
   describe "The parser"                LiraParserTest.tests
-  -- describe "The parser" EtlParserPropTest.tests
+  describe "The parser"                LiraParserPropTest.tests
   describe "The intermediate compiler" IntermediateCompilerTest.tests
   describe "The type-checker"          TypeCheckerTest.tests
   describe "The EVM compiler"          EvmCompilerTest.tests

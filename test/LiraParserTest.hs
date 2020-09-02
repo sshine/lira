@@ -61,18 +61,16 @@ basicExprTests = do
     `shouldBe` Scale 1 (MaxExp four five) Zero
 
   it "parses a simple not"
-    $          parse' "if not true within seconds(1) then zero else zero"
+    $          parse' "if not(true) within seconds(1) then zero else zero"
     `shouldBe` IfWithin (MemExp (Seconds 1) (NotExp true)) Zero Zero
 
-  -- DEVFIX: Deal with in 'improved-parser' branch.
-  xit "parses 'not' correctly when there are arithmetic operators (1)"
-    $ parse' "if not 1 + 2 < 3 + 4 within seconds(1) then zero else zero"
+  it "parses 'not' correctly when there are arithmetic operators (1)"
+    $ parse' "if not(1 + 2 < 3 + 4) within seconds(1) then zero else zero"
     `shouldBe` parse'
-                 "if not (1 + 2 < 3 + 4) within seconds(1) then zero else zero"
+                 "if not(1 + 2 < 3 + 4) within seconds(1) then zero else zero"
 
-  -- DEVFIX: Deal with in 'improved-parser' branch.
-  xit "parses 'not' when there are arithmetic operators (2)"
-    $ parse' "if not 1 + 2 < 3 + 4 within seconds(1) then zero else zero"
+  it "parses 'not' when there are arithmetic operators (2)"
+    $ parse' "if not(1 + 2 < 3 + 4) within seconds(1) then zero else zero"
     `shouldBe` IfWithin
                  (MemExp
                    (Seconds 1)
