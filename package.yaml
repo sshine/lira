@@ -39,8 +39,8 @@ executables:
       - lira
 
 tests:
-  unit:
-    source-dirs: unittests
+  default:
+    source-dirs: test
     main: main_tests.hs
     dependencies:
       - lira
