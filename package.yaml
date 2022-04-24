@@ -22,7 +22,6 @@ dependencies:
   - aeson
   - split
   - directory
-  - evm-opcodes
   - optparse-applicative
   - filepath
   - megaparsec
