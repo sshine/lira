@@ -1,13 +1,7 @@
-<p align="center"><img width="20%" src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-image.svg"></p>
-<p align="center"><img width="30%" src="https://github.com/etoroxlabs/lira/blob/master/docs/logo-text.svg"></p>
-<br/>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-![Haskell](https://img.shields.io/badge/haskell-lts--13.20-blue)
-[![Build Status](https://img.shields.io/circleci/build/github/etoroxlabs/lira)](https://circleci.com/gh/etoroxlabs/lira)
-[![GitHub Issues](https://img.shields.io/github/issues/etoroxlabs/lira.svg)](https://github.com/etoroxlabs/lira/issues)
-![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![Haskell](https://img.shields.io/badge/haskell-lts--18.28-blue)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/sshine/lira/Haskell%20CI)
+![GitHub issues](https://img.shields.io/github/issues/sshine/lira.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 # The Lira Language
 
